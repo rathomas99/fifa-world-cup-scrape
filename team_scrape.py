@@ -9,9 +9,13 @@ def get_html_tree(url):
 
 def get_teams(base):
     "Get the names and links of the teams"
+    #{'Brazil': {'link':'/fifa-tournaments/teams/association=BRA/index.html'}, 'Canada':{stuff}}
+    
     #XPath of relevant stuff                                                                              
     # for the capitalized name, i think 
-    # //*[@id="teamsBrowser"]/div[4]/div[1]/ul/li[1]/a/span                                               # for the team link                                                                                   # //*[@id="teamsBrowser"]/div[4]/div[1]/ul/li[1]/a
+    # //*[@id="teamsBrowser"]/div[4]/div[1]/ul/li[1]/a/span
+    # for the team link
+    # //*[@id="teamsBrowser"]/div[4]/div[1]/ul/li[1]/a
     tree = get_html_tree(base + '/fifa-tournaments/teams/search.html')
     country_names = tree.xpath('//*[@id="teamsBrowser"]/div/div/ul/li/a/span/text()')
     #print country_names[0]
@@ -24,26 +28,33 @@ def get_teams(base):
     #print teams_dict
     return teams_dict
 
-def get_team_data(base, teams_dict):
-    "For a given team, acquire general world cup data"
+def get_team_data(base, team):
+    "For the given team, acquire general world cup data"
     #general, over all world cups
     # //*[@id="tournamentstats"]/div[2]/div/div/ul[1]/li[2]/div[2]/span
     #specific world cup editions
     # //*[@id="tournamentstats"]/div[2]/div/div/div[1]/div/table/tbody/tr[1]/td[1]
+    link = team["link"]
+    tree = get_html_tree(base + link)
+    team_stats = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/ul[@class="first"]/li/div[@class="label-data"]/span/text()')
+    #stat_names = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/ul[@class="first"]/li/@class')
+    stats_names = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/ul[@class="first"]/li/div[@class="label-name"]/text()')
+    #print stats_names
+    #print zip(stats_names,team_stats)
+    if (u'FIFA World Cup\u2122' in team_stats):
+        for stat_name,value in zip(stats_names,team_stats):
+            if stat_name != " ":
+                #stat_name = "Cup"
+                team[stat_name] = value
+    #print stat_name,value
+    something = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/div[1]/div/table/tbody/tr[1]/td')
+    print something
+
+
+def get_all_teams_data(base, teams_dict):
+    "For the given teams, acquire general world cup data for each"
     for team in teams_dict:
-        link = teams_dict[team]["link"]
-        tree = get_html_tree(base + link)
-        team_stats = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/ul[@class="first"]/li/div[@class="label-data"]/span/text()')
-        #stat_names = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/ul[@class="first"]/li/@class')
-        stats_names = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/ul[@class="first"]/li/div[@class="label-name"]/text()')
-        #print stats_names
-        #print zip(stats_names,team_stats)
-        if (u'FIFA World Cup\u2122' in team_stats):
-            for stat_name,value in zip(stats_names,team_stats):
-                if stat_name != " ":
-                    #stat_name = "Cup"
-                    teams_dict[team][stat_name] = value
-                #print stat_name,value
+        get_team_data(base,teams_dict[team])
 
 def pretty_print_dict(my_dict):
     pp = pprint.PrettyPrinter(depth=3)
@@ -56,6 +67,6 @@ teams_dict = get_teams(base)
 country_names = { 'Chinese Taipei', 'Zambia', 'Canada', 'Germany','Brazil','Egypt' }
 test_dict = { key:value for key,value in teams_dict.items() if key in country_names }
 
-get_team_data(base, test_dict)
+get_all_teams_data(base, test_dict)
 pretty_print_dict(test_dict)
 # TODO SPECIFIC WORLD CUP EDITIONS PER TEAM
