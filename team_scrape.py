@@ -1,11 +1,6 @@
 import requests
 import pprint
 from lxml import html
-from itertools import islice
-
-def take(n, iterable):
-    "Return first n items of the iterable as a list"
-    return list(islice(iterable, n))
 
 def get_html_tree(url):
     page = requests.get(url)
