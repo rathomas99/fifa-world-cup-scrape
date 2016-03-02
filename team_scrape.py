@@ -1,6 +1,8 @@
 import requests
 import pprint
 from lxml import html
+from lxml import etree
+from lxml.html.clean import clean_html
 
 def get_html_tree(url):
     page = requests.get(url)
@@ -47,9 +49,9 @@ def get_team_data(base, team):
                 #stat_name = "Cup"
                 team[stat_name] = value
     #print stat_name,value
-    something = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/div[1]/div/table/tbody/tr[1]/td')
+    something = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/div[@class="expandcol hidden"][1]')
     print something
-
+    #print(clean_html(etree.tostring(tree)))
 
 def get_all_teams_data(base, teams_dict):
     "For the given teams, acquire general world cup data for each"
@@ -65,6 +67,7 @@ teams_dict = get_teams(base)
 
 #smaller set of teams to work with temporarily
 country_names = { 'Chinese Taipei', 'Zambia', 'Canada', 'Germany','Brazil','Egypt' }
+country_names = {'Brazil'}
 test_dict = { key:value for key,value in teams_dict.items() if key in country_names }
 
 get_all_teams_data(base, test_dict)
