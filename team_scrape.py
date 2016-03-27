@@ -49,9 +49,14 @@ def get_team_data(base, team):
                 #stat_name = "Cup"
                 team[stat_name] = value
     #print stat_name,value
-    something = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/div[@class="expandcol hidden"][1]')
-    print something
-    #print(clean_html(etree.tostring(tree)))
+    
+    #expand_col = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/div[@class="expandcol hidden"][1]')
+    #print expand_col
+    #another_div = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/div[1]/div')
+    #print another_div
+    #hidden_table = tree.xpath('//*[@id="tournamentstats"]/div[2]/div/div/div[1]/div/table')
+    #print hidden_table
+    #problematic because the table is hidden until the chevron is clicked
 
 def get_all_teams_data(base, teams_dict):
     "For the given teams, acquire general world cup data for each"
@@ -72,4 +77,23 @@ test_dict = { key:value for key,value in teams_dict.items() if key in country_na
 
 get_all_teams_data(base, test_dict)
 pretty_print_dict(test_dict)
-# TODO SPECIFIC WORLD CUP EDITIONS PER TEAM
+
+#TODONE: General stats per team
+#        Appearances, Matches Played, Goals Scored, and Average Goals
+
+#TODO: Get list of editions 
+#http://www.fifa.com/fifa-tournaments/archive/worldcup/index.html
+
+#TODO: Specific edition stats per team
+#http://www.fifa.com/fifa-tournaments/teams/association=USA/index.html
+# Edition, Placement, Matches Played, Wins, Draws, Losses, Goals Scored, Goals Against, Goals Scored Average, Goals Against Average
+
+#TODO: General stats per edition
+#http://www.fifa.com/worldcup/archive/uruguay1930/statistics/index.html
+#Matches Played, Goals Scored, Average Card per Match, Goals per Match 
+
+#TODO: Matches per edition
+#http://www.fifa.com/worldcup/archive/uruguay1930/matches/index.html
+#Group Number, Date, Time, Venue, Stadium, WinningTeamName, LosingTeamName, WinningTeamScore, LosingTeamScore
+
+#TODO: Players????? oh dear
