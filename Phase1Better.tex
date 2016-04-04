@@ -1,0 +1,547 @@
+\documentclass{article}
+\title{World Cup Soccer Database - Phase 1}
+\author{Rebecca Thomas, Dmytry Berkout}
+\usepackage{graphicx}
+\usepackage{enumitem}
+
+\begin{document}
+\maketitle
+\setcounter{tocdepth}{2}
+\tableofcontents{}
+\newpage
+
+\section{Purpose}
+\subsection{Purpose of the Document}
+This document is an introduction to the MondialDB project. It will provide details on the implementation and purpose of MondialDB. This document will provide a detailed design of MondialDB. It will include an information flow diagram and task forms that go into the inner workings of the project. It will also include the problems we encountered and the solutions we had for them.
+
+\subsection{Purpose of the Project}
+The purpose of the project is to create a database that can access various details about the World Cup. It will contain soccer team names and members and statistics such as player records, team records, penalty information, and the rank obtained. Another major part of this project is creating a tool to extract information about the World Cup from the Internet. It will be able to extract information from various websites and put them into a database readable format. The tool will be able to deal with data from European and American websites and transform it into a standard format. This project will allow for easy and readable queries.
+
+\subsection{Purpose of the Phase}
+In this phase of the project we are to design the database and receive feedback on it. We will attempt to catch any significant errors in design at this stage and prevent a broken or severely flawed implementation from going through. If design errors are caught early it will require considerably less work to fix them. 
+
+\section{Problems and Solutions}
+The following list is composed of problems we encountered with the conceptual design of the project.
+\begin{itemize}
+  \item 
+  Problem: We lack database design experience. Without experience, it is difficult to design a database.
+  
+  Solution:  Follow project examples and study how databases are designed.
+  \item 
+  Problem: We don't understand the World Cup and we don't know where to find data for it.
+  
+  Solution: Find out how the World Cup works. Research various World Cup websites. Find several that are usable for our project.
+  \item 
+  Problem:  We don't know how to extract data from websites.
+  
+  Solution: Research data extraction. Make a very basic test script. See what suites are available for use.
+   \item 
+  Problem: We don't know how to create websites. 
+    
+  Solution: Research the creation of websites. Make a very basic website. See what suites are available for use.
+  
+  \item
+  Problem: We don't live close together. 
+    
+  Solution: Use text messages, phone calls, and email to communicate. Use Google documents to share data.
+\end{itemize}
+
+\section{Assumptions}
+The assumptions we made are the following:
+\begin{itemize}
+\item Our web server will not be overloaded despite not having restrictions on who can use it.
+\item Our web server software will not fail.
+\item The database software will be sufficient for the scope of this project.
+\item The data pulled from websites is accurate.
+\item We will not need multilingual support. We will support only English.
+\item We will not need handicap support for our website.
+\item We will not need a mobile accessible version for our website.
+\item Our users are average people who do not have a computer science background but are able to comfortably use the internet.
+\end{itemize}
+
+\section{Environment and Requirements Analysis}
+
+\subsection{Using MondialDB}
+The user will interact with MondialDB through our website. The user will connect to the website using a web~browser and a simple webpage will be displayed. The sole purpose of this website is to run specific queries from the web-server through MondialDB and send the results back to the user. The website will only contain a selection of the predefined queries. On selection, a website form will appear which will contain the necessary information to perform the specified query. Both the website and web-server will check the input for validity. Once the query is processed, a table of results will appear underneath the form.
+
+\subsection{Extract Transform Load Tool} 
+For this project we will write a python script to pull data from selected websites. The ideal script will be as simple as possible while robust enough to work with a number of different websites. We will input a list of websites and the tool should automatically convert the data into database format and insert it, or provide a script to insert it into MondialDB.
+
+\subsection{Top-Level Information Flow Diagram}
+See Figure~\ref{flow} on page \pageref{flow} for the Top-Level Information Flow Diagram. The flow is generally as follows:
+
+\begin{enumerate}
+\item Data is input into MondialDB from Soccer Websites through Extract-Transform-Load. 
+\item The user asks for the website and is provided it through the Webpage Server.
+\item The Web Query Processor decides what kind of query the user is asking for.
+\item The Webpage SQL Query Processor translates the user query into SQL to be executed on MondialDB.
+\item The query is executed and database results are returned from MondialDB
+\item The results are outputted to the user with the format depending on the kind of query.
+\end{enumerate}
+
+%390 + 72.27 = 462.27
+\begin{figure}[ph]
+\includegraphics[height=462pt, angle=90]{dbflowdiagram}
+\caption{Information Flow Diagram}
+\label{flow}
+\end{figure}
+
+\clearpage
+
+\section{System Analysis and Specification}
+\subsection{List of Tasks and Task Flow Diagram}
+We describe the tasks and subtasks necessary to make, populate, and query MondialDB. 
+See Figure~\ref{taskflow} on page \pageref{taskflow} for the Task Flow Diagram. 
+The tasks are the following:
+\begin{itemize}
+  \item Extract, Transform, and Load Task
+  \item Webpage Server Task
+  \item Web Query Processor
+  \item Webpage SQL Query Processor
+  \item Output Results Task
+\end{itemize}
+
+\begin{figure}[ph]
+\centering{\includegraphics[width=\textwidth]{taskflowdiagram}}
+\caption{Task Flow Diagram}
+\label{taskflow}
+\end{figure}
+
+\clearpage
+
+\subsection{Extract, Transform, and Load Task}
+\begin{description}[noitemsep,align=right]
+  \item[Task Label] ETLT
+  \item[Task Name] Extract, Transform, and Load Task
+  \item[Performer] Python script
+  \item[Purpose] To extract data from Soccer Websites, transform it into a usable format, and send it to MondialDB
+  \item[Enabling Condition] On database creation or database update
+  \item[Description] It takes the information from Soccer Websites and puts the information into MondialDB.
+  \item[Frequency] On database update
+  \item[Duration] It will depend on the extraction, transformation, and load subtasks.
+  \item[Importance] Most important
+  \item[Maximum Delay] It depends on the subtasks.
+  \item[Input] Soccer Websites
+  \item[Output] Copy of the SQL script run by the python script as well as debugging information
+  \item[Document Use] Soccer Websites, Unformatted Data, Formatted Data
+  \item[Operations Performed] Data extraction, data transformation, and data loading
+  \item[Subtasks] 
+  Data extraction (ETLT.1), 
+  data transformation (ETLT.2), 
+  data loading (ETLT.3)  
+  \item[Error Conditions] Errors from subtasks
+\end{description}
+
+\subsubsection{Data Extraction}
+\begin{description}[noitemsep,align=right]
+  \item[Task Label] ETLT.1
+  \item[Task Name] Data Extraction
+  \item[Performer] Python script
+  \item[Purpose] To extract data from Soccer Websites
+  \item[Enabling Condition] On database data insertion
+  \item[Description] It pulls HTML from the Soccer Websites. 
+  It then parses the HTML for data to put into MondialDB.  
+  \item[Frequency] On database update
+  \item[Duration] It depends on how quickly websites are scraped and extracted.
+  \item[Importance] Most important
+  \item[Maximum Delay] It depends on how many Soccer Websites are chosen.
+  \item[Input] Soccer Websites
+  \item[Output] Unformatted Data from the Soccer Websites
+  \item[Document Use] Soccer Websites -\textgreater{} Unformatted Data
+  \item[Operations Performed] Data extraction
+  \item[Subtasks] None
+  \item[Error Conditions] Soccer Websites are invalid. The format of the website is invalid or confusing.
+\end{description}
+
+
+\newpage
+
+\subsubsection{Data Transformation}
+\begin{description}[noitemsep,align=right]
+  \item[Task Label] ETLT.2
+  \item[Task Name] Data Transformation
+  \item[Performer] Python script
+  \item[Purpose] To transform data from Soccer Websites into a standardized format
+  \item[Enabling Condition] On database data insertion
+  \item[Description] It standardizes the data produced by Data Extraction. For example, names that are formatted like "Last Name, First Name" and "First Name Last Name" shall be changed into a standard format.
+  \item[Frequency] On database update
+  \item[Duration] It depends on how quickly the data goes from being unformatted to being formatted.
+  \item[Importance] Important
+  \item[Maximum Delay] It depends on how badly the original data was formatted.
+  \item[Input] Unformatted Data from Data Extraction
+  \item[Output] Formatted Data 
+  \item[Document Use] Unformatted Data -\textgreater{} Formatted Data
+  \item[Operations Performed] Data transformation
+  \item[Subtasks] None
+  \item[Error Conditions] The data are formatted badly.
+\end{description}
+
+\subsubsection{Data Loading}
+\begin{description}[noitemsep,align=right]
+  \item[Task Label] ETLT.3
+  \item[Task Name] Data Loading
+  \item[Performer] Python script
+  \item[Purpose] To load formatted data into MondialDB
+  \item[Enabling Condition] On database data insertion
+  \item[Description] Makes an SQL script that inserts the standardized data from Data Transformation into MondialDB.
+  \item[Frequency] On database update
+  \item[Duration] It depends on how quickly the data is inserted into MondialDB
+  \item[Importance] Most important
+  \item[Maximum Delay]  It depends on how the slow the connection between the data collector and the database is.
+  \item[Input] Formatted Data
+  \item[Output] Log from inserting into MondialDB. Copy of the SQL script run by the python script.
+  \item[Document Use] Formatted Data -\textgreater{} SQL Script
+  \item[Operations Performed] Data Loading
+  \item[Subtasks] None
+  \item[Error Conditions] There is a faulty connection with the database.
+\end{description}
+
+\newpage
+
+\subsection{Webpage Server Task}
+\begin{description}[noitemsep,align=right]
+  \item[Task Label] WPST
+  \item[Task Name] Webpage Server Task
+  \item[Performer] Web-server
+  \item[Purpose] Sends webpage to user. Takes requests for data or returns results from a previous query.
+  \item[Enabling Condition] After database creation
+  \item[Description] The webpage server will act as the mediator between the MondialDB and the user. It will take user requests and send them to a process that can indirectly interact with MondialDB. It will accept any user connections.
+  \item[Frequency] Always on
+  \item[Duration] As long as the database is active
+  \item[Importance]  Most Important
+  \item[Maximum Delay] Response delay to user requests should be short and less than 10 seconds.
+  \item[Input] User connection or Formatted Results
+  \item[Output] Webpage for user to interact with
+  \item[Document Use] Formatted Results -\textgreater{} Weppage
+  \item[Operations Performed] Generate and send webpage to user. If new user, then do the operations in WPST.1. Otherwise, serve up the query results in a table.
+  \item[Subtasks] Introductory Webpage Task (WPST.1)
+  \item[Error Conditions] The web-server fails or does not respond. Too many users connect at once.
+\end{description}
+
+
+\newpage
+
+\subsubsection{Introductory Webpage Task}
+\begin{description}[noitemsep,align=right]
+  \item[Task Label] WPST.1
+  \item[Task Name] Introductory Webpage Task
+  \item[Performer] Web-server
+  \item[Purpose] To give a new user a webpage to interact with. Generate the webpage and interface.
+  \item[Enabling Condition] On access to MondialDB website
+  \item[Description] The web-server will generate a website on visit from user. From here the user will be able to do database queries.
+  \item[Frequency] When a user accesses the website
+  \item[Duration] Webpage generation should be fast and less than a few seconds. The webpage should remain active as long as the user doesn't disconnect.  There might be a possible timeout for inactive users. 
+  \item[Importance] Important
+  \item[Maximum Delay] In ideal network conditions, it should take less than 5 seconds.
+  \item[Input] User connection
+  \item[Output] Introductory Webpage for the user to interact with
+  \item[Document Use] Webpage
+  \item[Operations Performed] Generate introductory webpage for user to interact with. Handle valid user requests by passing them on to send data to Web Query Processor. Handle invalid user requests by ignoring them and informing the user why they are invalid.
+  \item[Subtasks] None
+  \item[Error Conditions] The web-server fails or does not respond. Too many users connect at once.
+
+\end{description}
+
+\newpage
+
+\subsection{Web Query Processor}
+\begin{description}[noitemsep,align=right]
+  \item[Task Label] WQPT
+  \item[Task Name] Web Query Processor
+  \item[Performer] Web-server
+  \item[Purpose] Processes queries from the web-server and sends the respective query to the Webpage SQL Query Processor Task. 
+  \item[Enabling Condition] After web-server runs
+  \item[Description] It determines the user-specified query from the forms on the Webpage. Once this query is validated, it sends the query on to the Webpage SQL Query Processor.
+  \item[Frequency]  Always on
+  \item[Duration] As long as the database is active
+  \item[Importance] Important
+  \item[Maximum Delay] Response delay to user requests should be short and less than 10 seconds.
+  \item[Input] User-inputted form data from the Webpage
+  \item[Output] Sends Query type to Webpage SQL Processor Task
+  \item[Document Use] Webpage -\textgreater{} Query
+  \item[Operations Performed] Validates queries and determines query type.
+  \item[Subtasks] None
+  \item[Error Conditions] The query isn't valid.
+\end{description}
+
+\newpage
+
+\subsection{Webpage SQL Query Processor Task}
+\begin{description}[noitemsep,align=right]
+  \item[Task Label] WSQLQPT
+  \item[Task Name] Webpage SQL Query Processor Task
+  \item[Performer] Webpage server
+  \item[Purpose] Sends the query from the user-specified query task to MondialDB
+  \item[Enabling Condition] User submits valid query
+  \item[Description] The WSQLQPT is the final step before the query reaches MondialDB. It will send a perform a raw SQL query in MondialDB
+  \item[Frequency]  Triggers on every received valid user query
+  \item[Duration] The SQL shouldn't take longer than 15 seconds to run.
+  \item[Importance] Important 
+  \item[Maximum Delay] The SQL shouldn't take at most longer than 45 seconds to run.
+  \item[Input] User-specified query from the following list:
+
+    QGC (Query for a given cup)
+    
+    QGP (Query for a given player)
+    
+    QSS(Query for Super Stars)
+    
+    QTH(Query for Team History)
+    
+    QCP(Query for Country's Players)
+    
+    QPCC(Query for Penalty Cards in a Cup)
+    
+    QPCT (Query for Penalty Cards given to a Team)
+    
+    QGM (Query for a Given Match)
+    
+    QMMG (Query for Matches with the Most Goals)
+    
+  \item[Output] Sends SQL query to MondialDB
+  \item[Document Use] Query  
+  \item[Operations Performed]  If the query is a valid query from the aforementioned list, then create the SQL command. If it is not a valid query, send an error message back.
+  \item[Subtasks] None
+  \item[Error Conditions] The user-specified query is not valid.  
+\end{description}
+
+\newpage
+
+\subsection{Output Results Task}
+\begin{description}[noitemsep,align=right]
+  \item[Task Label] OR
+  \item[Task Name] Output Results Task
+  \item[Performer] Webpage Server
+  \item[Purpose] Sends the query results to the user
+  \item[Enabling Condition] MondialDB receives query and sends output to Output Results Task
+  \item[Description] The WSQLQPT is the final step before the query reaches MondialDB. It will send a raw SQL query to MondialDB.
+  \item[Frequency]  Triggers on every received request
+  \item[Duration] In ideal network conditions, it should be short and less than 10 seconds.
+  \item[Importance] Most Important
+  \item[Maximum Delay] Response delay to user requests should be short and less than 10 seconds.
+  \item[Input] For a user-specified query, Database Results
+  \item[Output] The Formatted Result from the following results:
+  
+  RQGC (Result for Query for a Given Cup)
+  
+  RQGP (Result for Query for a Given Player) 
+  
+  RQSS (Result for Query for Super Stars)
+  
+  RQTH (Result for query for Team History)
+  
+  RQCP (Result for query for Country's Players)
+  
+  RQPCC (Result for Query for Penalty Cards in a Cup)
+  
+  RQPCT (Result for query for Penalty Cards for a team)
+  
+  RQGM (Result for Query for Given Match) 
+  
+  RQMMG (Result for query for Matches with the Most Goals)
+  
+  \item[Document Use] Database Results -\textgreater{} Formatted Results
+  \item[Operations Performed] Sends query results to Webpage Server Task 
+  \item[Subtasks] None
+  \item[Error Conditions] MondialDB gave back error conditions instead of valid results. Connection to user is disrupted. Web server becomes overloaded.
+\end{description}
+
+\newpage
+
+\subsection{List of Documents}
+See page \pageref{taskflow2} for repeated Task Flow Diagram. The documents are the following:
+\begin{itemize}
+	\item Webpage
+	\item Query 
+	\item Database Results
+	\item Formatted Results
+	\item Soccer Websites
+	\item Unformatted Data
+	\item Formatted Data
+	\item SQL Script
+\end{itemize}
+
+\begin{figure}[ph]
+	\centering{\includegraphics[width=\textwidth]{taskflowdiagram}}
+	\caption{Task Flow Diagram}
+	\label{taskflow2}
+\end{figure}
+
+\clearpage
+
+\subsection{Webpage}
+The website will display either an introductory webpage or a webpage that
+displays results from a previous query. 
+\begin{itemize}
+	\item Title
+	\item Description
+	\item Link-to-Usage-Documentation 
+	\item Query-Request-Form
+	\item Result-Table
+\end{itemize}
+
+\subsection{Query}
+The types of Queries:
+\begin{itemize}
+	\label{queries}
+	\item QGC (Query for a given cup)
+	\item QGP (Query for a given player)
+	\item QSS (Query for Super Stars)
+	\item QTH (Query for Team History)
+	\item QCP (Query for Country's Players)
+	\item QPCC (Query for Penalty Cards in a Cup)
+	\item QPCT (Query for Penalty Cards given to a Team)
+	\item QGM (Query for a Given Match)
+	\item QMMG (Query for Matches with the Most Goals)
+\end{itemize}
+Each query might not require all parts of the following general document form.
+\begin{itemize}
+	\item Query-Type (See above)
+	\item Cup-Year (All, 1930, 1934, 1938, ...)
+	\item Team-Name (All, Brazil, Germany, Italy, ...)
+	\item Player-Name (All, Carbajal, Lahm, Klose, ...)
+	\item Want-Match-Info (True, False)
+	\item Match-Query-Info
+	\begin{itemize}
+		\item Winning-Team (Any, Brazil, Germany, Italy, ...)
+		\item Losing-Team (Any, Brazil, ...)
+		\item Get-Match-With-Most-Goals-For-Winning-Team (True, False)
+	\end{itemize}
+	\item Want-Penalty-Cards (True, False)
+\end{itemize}
+
+\subsection{Database Results}
+The Database Results are the exact results from MondialDB.
+The Result-Data will be in the format that MondialDB returns.
+\begin{itemize}
+	\item Query-Type (See section \ref{queries} on page \pageref{queries}  for the list of queries)
+	\item Result-Type (See section \ref{results} on page \pageref{results}  for the list of queries)
+	\item Result-Data
+\end{itemize}
+
+\subsection{Formatted Results}
+The types and document forms for Formatted Results:
+\begin{itemize}
+	\label{results}
+	\item RQGC (Result for Query for a Given Cup)
+	\begin{itemize}
+		\item Cup-Year
+		\item Number-Goals-Per-Team-List
+		\item Team-Name-List
+		\item Team-Position-List
+	\end{itemize}
+	\item RQGP (Result for Query for a Given Player) 
+	\begin{itemize}
+		\item Player-Name
+		\item Cup-Name-List
+		\item Number-Goals-Per-Cup-List
+		\item Number-Penalties-Per-Cup-List
+		\item Team-Name-List
+	\end{itemize}
+	\item RQSS (Result for Query for Super Stars)
+	\begin{itemize}
+		\item Player-Name
+		\item Cup-Name-List
+		\item Number-Goals-Per-Cup-List
+		\item Number-Penalties-Per-Cup-List
+		\item Team-Name-List
+	\end{itemize}
+	\item RQTH (Result for query for Team History)
+	\begin{itemize}
+		\item Team-Name
+		\item Cup-Name-List
+		\item Number-Goals-Per-Cup-List
+	\end{itemize}
+	\clearpage
+	\item RQCP (Result for query for Country's Players)
+		\begin{itemize}
+			\item Team-Name
+			\item Player-List
+			\item Number-Goals-Per-Player-List
+			\item Number-Penalties-Per-Player-List
+		\end{itemize}
+	\item RQPCC (Result for Query for Penalty Cards in a Cup)
+	\begin{itemize}
+		\item Cup-Year
+		\item Number-Penalties-Per-Team-List
+		\item Team-Name-List
+	\end{itemize}
+	\item RQPCT (Result for query for Penalty Cards for a team)
+	\begin{itemize}
+		\item Team-Name
+		\item Cup-Name-List
+		\item Number-Goals-Per-Cup-List
+		\item Number-Penalties-Per-Cup-List
+	\end{itemize}
+	\item RQGM (Result for Query for Given Match) 
+	\begin{itemize}
+		\item Winning-Team-Name
+		\item Losing-Team-Name
+		\item Cup-Name
+		\item Winning-Team-Goals
+		\item Winning-Team-Penalties
+		\item Losing-Team-Goals
+		\item Losing-Team-Penalties
+	\end{itemize}
+	\item RQMMG (Result for query for Matches with the Most Goals) 
+	\begin{itemize}
+		\item Winning-Team-Name
+		\item Losing-Team-Name
+		\item Cup-Name
+		\item Winning-Team-Goals
+		\item Losing-Team-Goals
+	\end{itemize}
+\end{itemize}
+
+
+\subsection{Soccer Websites}
+The Soccer Websites will be scraped for World Cup data to insert into MondialDB.
+\begin{itemize}
+	\item SW-ID
+	\item URL
+	\item Publisher
+\end{itemize}
+
+\subsection{Unformatted Data}
+The Unformatted Data is extracted data from the Soccer Websites. 
+The HTML-Selector is the exact path of where to find the data on the
+relevant webpage. The access date is included because websites change over time.
+\begin{itemize}
+	\item SW-ID
+	\item Access-Date
+	\item HTML-Selector
+	\item Data-Value
+\end{itemize}
+
+\subsection{Formatted Data}
+The Formatted Data is a transformation of the Unformatted Data into
+something that MondialDB will accept. 
+
+\begin{itemize}
+	\item SW-ID
+	\item Access-Date
+	\item Number-Goals
+	\item Number-Penalties
+	\item Cup-Year (All, 1930, 1934, 1938, ...)
+	\item Team-Name (All, Brazil, Germany, Italy, ...)
+	\item Player-Name (All, Carbajal, Lahm, Klose, ...)
+	\item Is-Match (True, False)
+	\item Match-Data
+	\begin{itemize}
+		\item Winning-Team (Brazil, Germany, Italy, ...)
+		\item Losing-Team (Brazil, ...)
+		\item Winning-Team-Goals
+		\item Losing-Team-Goals
+	\end{itemize}
+\end{itemize}
+
+\subsection{SQL Script}
+The SQL Script is the result from the Data Loading Task (ETLT.3).
+It will be run on MondialDB by the python script handling ETLT.3.
+\begin{itemize}
+	\item File-Name 
+	\item Date-Executed
+	\item File-Contents
+\end{itemize} 
+
+\end{document}  
