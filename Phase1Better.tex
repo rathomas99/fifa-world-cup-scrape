@@ -88,8 +88,8 @@ See Figure~\ref{flow} on page \pageref{flow} for the Top-Level Information Flow 
 
 \clearpage
 
-\section{System Analysis and Specification}
-\subsection{List of Tasks and Task Flow Diagram}
+%\section{System Analysis and Specification}
+\section{List of Tasks and Task Flow Diagram}
 We describe the tasks and subtasks necessary to make, populate, and query MondialDB. 
 See Figure~\ref{taskflow} on page \pageref{taskflow} for the Task Flow Diagram. 
 The tasks are the following:
@@ -257,7 +257,7 @@ The tasks are the following:
   \item[Importance] Important
   \item[Maximum Delay] Response delay to user requests should be short and less than 10 seconds.
   \item[Input] User-inputted form data from the Webpage
-  \item[Output] Sends Query type to Webpage SQL Processor Task
+  \item[Output] Sends Query type to Webpage SQL Processor Task. Query types include \\QGC, QGP, QSS, QTH, QCP, QPCC, QPCT, QGM, and GMMG.
   \item[Document Use] Webpage -\textgreater{} Query
   \item[Operations Performed] Validates queries and determines query type.
   \item[Subtasks] None
@@ -348,7 +348,7 @@ The tasks are the following:
 
 \newpage
 
-\subsection{List of Documents}
+\section{List of Documents}
 See page \pageref{taskflow2} for repeated Task Flow Diagram. The documents are the following:
 \begin{itemize}
 	\item Webpage
