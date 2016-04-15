@@ -63,13 +63,11 @@ def get_team_data(base, team):
     for stat_name_html,value_html in zip(stats_names,team_stats):
         stat_name = stat_name_html.get_text()
         value = value_html.get_text()
-        counter = 0
-        if stat_name in team:
-            stat_name = stat_name + str(counter)
-            counter = counter + 1
+        print stat_name
+        print value
         if stat_name != " ":
-            team[stat_name] = value
-            
+            team.setdefault(stat_name, []).append(value)
+    print "-------------"        
 
 def get_all_teams_data(base, teams_dict):
     "For the given teams, acquire general world cup data for each"
