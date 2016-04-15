@@ -214,7 +214,7 @@ The tasks are the following:
   \item[Importance] Important
   \item[Maximum Delay] Response delay to user requests should be short and less than 10 seconds.
   \item[Input] User-inputted form data from the Webpage
-  \item[Output] Sends Query type to Webpage SQL Processor Task. Query types include \\QGC, QGP, QSS, QTH, QCP, QPCC, QPCT, QGM, and GMMG.
+  \item[Output] Sends Query type to Webpage SQL Processor Task. See Query Types.
   \item[Document Use] Webpage -\textgreater{} Query
   \item[Operations Performed] Validates queries and determines query type.
   \item[Subtasks] None
@@ -247,13 +247,13 @@ The tasks are the following:
     
     QCP(Query for Country's Players)
     
-    QPCC(Query for Penalty Cards in a Cup)
+    QPCF(Query for Country's Flag)
     
-    QPCT (Query for Penalty Cards given to a Team)
+    QPMA (Query for Match's Attendance)
     
-    QGM (Query for a Given Match)
+    QGMS (Query for a Given Match's Stadium)
     
-    QMMG (Query for Matches with the Most Goals)
+    QGMR (Query for a Given Match's Referee)
     
   \item[Output] Sends SQL query to MondialDB
   \item[Document Use] Query  
@@ -277,26 +277,7 @@ The tasks are the following:
   \item[Importance] Most Important
   \item[Maximum Delay] Response delay to user requests should be short and less than 10 seconds.
   \item[Input] For a user-specified query, Database Results
-  \item[Output] The Formatted Result from the following results:
-  
-  RQGC (Result for Query for a Given Cup)
-  
-  RQGP (Result for Query for a Given Player) 
-  
-  RQSS (Result for Query for Super Stars)
-  
-  RQTH (Result for query for Team History)
-  
-  RQCP (Result for query for Country's Players)
-  
-  RQPCC (Result for Query for Penalty Cards in a Cup)
-  
-  RQPCT (Result for query for Penalty Cards for a team)
-  
-  RQGM (Result for Query for Given Match) 
-  
-  RQMMG (Result for query for Matches with the Most Goals)
-  
+  \item[Output] The Formatted Result from the results  
   \item[Document Use] Database Results -\textgreater{} Formatted Results
   \item[Operations Performed] Sends query results to Webpage Server Task 
   \item[Subtasks] None
@@ -335,10 +316,10 @@ The types of Queries:
 	\item QSS (Query for Super Stars)
 	\item QTH (Query for Team History)
 	\item QCP (Query for Country's Players)
-	\item QPCC (Query for Penalty Cards in a Cup)
-	\item QPCT (Query for Penalty Cards given to a Team)
-	\item QGM (Query for a Given Match)
-	\item QMMG (Query for Matches with the Most Goals)
+	\item QPCF(Query for Country's Flag)
+	\item QPMA (Query for Match's Attendance)
+	\item QGMS (Query for a Given Match's Stadium)
+	\item QGMR (Query for a Given Match's Referee)
 \end{itemize}
 Each query might not require all parts of the following general document form.
 \begin{itemize}
@@ -390,7 +371,6 @@ The types and document forms for Formatted Results:
 		\item Cup-Name-List
 		\item Number-Goals-Per-Cup-List
 	\end{itemize}
-	\clearpage
 	\item RQCP (Result for query for Country's Players)
 		\begin{itemize}
 			\item Team-Name
@@ -398,37 +378,6 @@ The types and document forms for Formatted Results:
 			\item Number-Goals-Per-Player-List
 			\item Number-Penalties-Per-Player-List
 		\end{itemize}
-	\item RQPCC (Result for Query for Penalty Cards in a Cup)
-	\begin{itemize}
-		\item Cup-Year
-		\item Number-Penalties-Per-Team-List
-		\item Team-Name-List
-	\end{itemize}
-	\item RQPCT (Result for query for Penalty Cards for a team)
-	\begin{itemize}
-		\item Team-Name
-		\item Cup-Name-List
-		\item Number-Goals-Per-Cup-List
-		\item Number-Penalties-Per-Cup-List
-	\end{itemize}
-	\item RQGM (Result for Query for Given Match) 
-	\begin{itemize}
-		\item Winning-Team-Name
-		\item Losing-Team-Name
-		\item Cup-Name
-		\item Winning-Team-Goals
-		\item Winning-Team-Penalties
-		\item Losing-Team-Goals
-		\item Losing-Team-Penalties
-	\end{itemize}
-	\item RQMMG (Result for query for Matches with the Most Goals) 
-	\begin{itemize}
-		\item Winning-Team-Name
-		\item Losing-Team-Name
-		\item Cup-Name
-		\item Winning-Team-Goals
-		\item Losing-Team-Goals
-	\end{itemize}
 \end{itemize}
 
 \part{Phase 2 Documentation}
