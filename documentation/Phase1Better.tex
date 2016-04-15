@@ -1,5 +1,5 @@
 \documentclass{article}
-\title{World Cup Soccer Database - Phase 1}
+\title{World Cup Soccer Database}
 \author{Rebecca Thomas, Dmytry Berkout}
 \usepackage{graphicx}
 \usepackage{enumitem}
@@ -19,7 +19,7 @@ This document is an introduction to the MondialDB project. It will provide detai
 \subsection{Purpose of the Project}
 The purpose of the project is to create a database that can access various details about the World Cup. It will contain soccer team names and members and statistics such as player records, team records, penalty information, and the rank obtained. Another major part of this project is creating a tool to extract information about the World Cup from the Internet. It will be able to extract information from various websites and put them into a database readable format. The tool will be able to deal with data from European and American websites and transform it into a standard format. This project will allow for easy and readable queries.
 
-\subsection{Purpose of the Phase}
+\subsection{Purpose of Phase 1}
 In this phase of the project we are to design the database and receive feedback on it. We will attempt to catch any significant errors in design at this stage and prevent a broken or severely flawed implementation from going through. If design errors are caught early it will require considerably less work to fix them. 
 
 \section{Problems and Solutions}
@@ -61,6 +61,7 @@ The assumptions we made are the following:
 \item Our users are average people who do not have a computer science background but are able to comfortably use the internet.
 \end{itemize}
 
+\part{Phase 1 Documentation}
 \section{Environment and Requirements Analysis}
 
 \subsection{Using MondialDB}
@@ -200,52 +201,6 @@ The tasks are the following:
 
 \newpage
 
-\subsection{Webpage Server Task}
-\begin{description}[noitemsep,align=right]
-  \item[Task Label] WPST
-  \item[Task Name] Webpage Server Task
-  \item[Performer] Web-server
-  \item[Purpose] Sends webpage to user. Takes requests for data or returns results from a previous query.
-  \item[Enabling Condition] After database creation
-  \item[Description] The webpage server will act as the mediator between the MondialDB and the user. It will take user requests and send them to a process that can indirectly interact with MondialDB. It will accept any user connections.
-  \item[Frequency] Always on
-  \item[Duration] As long as the database is active
-  \item[Importance]  Most Important
-  \item[Maximum Delay] Response delay to user requests should be short and less than 10 seconds.
-  \item[Input] User connection or Formatted Results
-  \item[Output] Webpage for user to interact with
-  \item[Document Use] Formatted Results -\textgreater{} Weppage
-  \item[Operations Performed] Generate and send webpage to user. If new user, then do the operations in WPST.1. Otherwise, serve up the query results in a table.
-  \item[Subtasks] Introductory Webpage Task (WPST.1)
-  \item[Error Conditions] The web-server fails or does not respond. Too many users connect at once.
-\end{description}
-
-
-\newpage
-
-\subsubsection{Introductory Webpage Task}
-\begin{description}[noitemsep,align=right]
-  \item[Task Label] WPST.1
-  \item[Task Name] Introductory Webpage Task
-  \item[Performer] Web-server
-  \item[Purpose] To give a new user a webpage to interact with. Generate the webpage and interface.
-  \item[Enabling Condition] On access to MondialDB website
-  \item[Description] The web-server will generate a website on visit from user. From here the user will be able to do database queries.
-  \item[Frequency] When a user accesses the website
-  \item[Duration] Webpage generation should be fast and less than a few seconds. The webpage should remain active as long as the user doesn't disconnect.  There might be a possible timeout for inactive users. 
-  \item[Importance] Important
-  \item[Maximum Delay] In ideal network conditions, it should take less than 5 seconds.
-  \item[Input] User connection
-  \item[Output] Introductory Webpage for the user to interact with
-  \item[Document Use] Webpage
-  \item[Operations Performed] Generate introductory webpage for user to interact with. Handle valid user requests by passing them on to send data to Web Query Processor. Handle invalid user requests by ignoring them and informing the user why they are invalid.
-  \item[Subtasks] None
-  \item[Error Conditions] The web-server fails or does not respond. Too many users connect at once.
-
-\end{description}
-
-\newpage
-
 \subsection{Web Query Processor}
 \begin{description}[noitemsep,align=right]
   \item[Task Label] WQPT
@@ -371,17 +326,6 @@ See page \pageref{taskflow2} for repeated Task Flow Diagram. The documents are t
 
 \clearpage
 
-\subsection{Webpage}
-The website will display either an introductory webpage or a webpage that
-displays results from a previous query. 
-\begin{itemize}
-	\item Title
-	\item Description
-	\item Link-to-Usage-Documentation 
-	\item Query-Request-Form
-	\item Result-Table
-\end{itemize}
-
 \subsection{Query}
 The types of Queries:
 \begin{itemize}
@@ -412,14 +356,6 @@ Each query might not require all parts of the following general document form.
 	\item Want-Penalty-Cards (True, False)
 \end{itemize}
 
-\subsection{Database Results}
-The Database Results are the exact results from MondialDB.
-The Result-Data will be in the format that MondialDB returns.
-\begin{itemize}
-	\item Query-Type (See section \ref{queries} on page \pageref{queries}  for the list of queries)
-	\item Result-Type (See section \ref{results} on page \pageref{results}  for the list of queries)
-	\item Result-Data
-\end{itemize}
 
 \subsection{Formatted Results}
 The types and document forms for Formatted Results:
@@ -495,55 +431,6 @@ The types and document forms for Formatted Results:
 	\end{itemize}
 \end{itemize}
 
-
-\subsection{Soccer Websites}
-The Soccer Websites will be scraped for World Cup data to insert into MondialDB.
-\begin{itemize}
-	\item SW-ID
-	\item URL
-	\item Publisher
-\end{itemize}
-
-\subsection{Unformatted Data}
-The Unformatted Data is extracted data from the Soccer Websites. 
-The HTML-Selector is the exact path of where to find the data on the
-relevant webpage. The access date is included because websites change over time.
-\begin{itemize}
-	\item SW-ID
-	\item Access-Date
-	\item HTML-Selector
-	\item Data-Value
-\end{itemize}
-
-\subsection{Formatted Data}
-The Formatted Data is a transformation of the Unformatted Data into
-something that MondialDB will accept. 
-
-\begin{itemize}
-	\item SW-ID
-	\item Access-Date
-	\item Number-Goals
-	\item Number-Penalties
-	\item Cup-Year (All, 1930, 1934, 1938, ...)
-	\item Team-Name (All, Brazil, Germany, Italy, ...)
-	\item Player-Name (All, Carbajal, Lahm, Klose, ...)
-	\item Is-Match (True, False)
-	\item Match-Data
-	\begin{itemize}
-		\item Winning-Team (Brazil, Germany, Italy, ...)
-		\item Losing-Team (Brazil, ...)
-		\item Winning-Team-Goals
-		\item Losing-Team-Goals
-	\end{itemize}
-\end{itemize}
-
-\subsection{SQL Script}
-The SQL Script is the result from the Data Loading Task (ETLT.3).
-It will be run on MondialDB by the python script handling ETLT.3.
-\begin{itemize}
-	\item File-Name 
-	\item Date-Executed
-	\item File-Contents
-\end{itemize} 
+\part{Phase 2 Documentation}
 
 \end{document}  
