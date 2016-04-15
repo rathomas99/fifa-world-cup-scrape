@@ -449,6 +449,21 @@ GROUP BY g.matchID
 \end{lstlisting}
 \newpage
 
+\section{Country's Players Query}
+\begin{lstlisting}[language=SQL]
+--list of teams in cups
+CREATE VIEW teams_ids AS
+SELECT cm.teamIds
+FROM CupMember cm
+--Matches teams participated in
+CREATE VIEW matchs_ids AS
+Distinct(SELECT m.teamID1,m.matchID
+FROM match m
+JOIN 
+SELECT m.teamID2, m.matchID
+FROM match m )
+\end{lstlisting}
+
 \section{Pseudo code for Extract and Transform Task}
 The pseudo code for extracting can be thoroughly extended.
 The basic process is to grab the html of a website, parse it, and then execute a regex on its contents to capture data. The following is a code snippet:
