@@ -249,9 +249,9 @@ The tasks are the following:
     
     QPCF(Query for Country's Flag)
     
-    QPMA (Query for Match's Attendance)
+    QMA (Query for Match's Attendance)
     
-    QGMS (Query for a Given Match's Stadium)
+  	QAP (Query for Aggressive Players)
     
     QGMR (Query for a Given Match's Referee)
     
@@ -305,9 +305,7 @@ See page \pageref{taskflow2} for repeated Task Flow Diagram. The documents are t
 	\label{taskflow2}
 \end{figure}
 
-\clearpage
-
-\subsection{Query}
+\subsection{Queries}
 The types of Queries:
 \begin{itemize}
 	\label{queries}
@@ -317,68 +315,15 @@ The types of Queries:
 	\item QTH (Query for Team History)
 	\item QCP (Query for Country's Players)
 	\item QPCF(Query for Country's Flag)
-	\item QPMA (Query for Match's Attendance)
-	\item QGMS (Query for a Given Match's Stadium)
+	\item QMA (Query for Match's Attendance)
+	\item QGMS (Query for Aggressive Players)
 	\item QGMR (Query for a Given Match's Referee)
 \end{itemize}
-Each query might not require all parts of the following general document form.
-\begin{itemize}
-	\item Query-Type (See above)
-	\item Cup-Year (All, 1930, 1934, 1938, ...)
-	\item Team-Name (All, Brazil, Germany, Italy, ...)
-	\item Player-Name (All, Carbajal, Lahm, Klose, ...)
-	\item Want-Match-Info (True, False)
-	\item Match-Query-Info
-	\begin{itemize}
-		\item Winning-Team (Any, Brazil, Germany, Italy, ...)
-		\item Losing-Team (Any, Brazil, ...)
-		\item Get-Match-With-Most-Goals-For-Winning-Team (True, False)
-	\end{itemize}
-	\item Want-Penalty-Cards (True, False)
-\end{itemize}
 
-
-\subsection{Formatted Results}
-The types and document forms for Formatted Results:
-\begin{itemize}
-	\label{results}
-	\item RQGC (Result for Query for a Given Cup)
-	\begin{itemize}
-		\item Cup-Year
-		\item Number-Goals-Per-Team-List
-		\item Team-Name-List
-		\item Team-Position-List
-	\end{itemize}
-	\item RQGP (Result for Query for a Given Player) 
-	\begin{itemize}
-		\item Player-Name
-		\item Cup-Name-List
-		\item Number-Goals-Per-Cup-List
-		\item Number-Penalties-Per-Cup-List
-		\item Team-Name-List
-	\end{itemize}
-	\item RQSS (Result for Query for Super Stars)
-	\begin{itemize}
-		\item Player-Name
-		\item Cup-Name-List
-		\item Number-Goals-Per-Cup-List
-		\item Number-Penalties-Per-Cup-List
-		\item Team-Name-List
-	\end{itemize}
-	\item RQTH (Result for query for Team History)
-	\begin{itemize}
-		\item Team-Name
-		\item Cup-Name-List
-		\item Number-Goals-Per-Cup-List
-	\end{itemize}
-	\item RQCP (Result for query for Country's Players)
-		\begin{itemize}
-			\item Team-Name
-			\item Player-List
-			\item Number-Goals-Per-Player-List
-			\item Number-Penalties-Per-Player-List
-		\end{itemize}
-\end{itemize}
+\paragraph{Query for Country's Flag}
+\paragraph{Query for Match's Attendance}
+\paragraph{Query for Aggressive Players}
+\paragraph{Query for a Given Match's Referee}
 
 \part{Phase 2 Documentation}
 
