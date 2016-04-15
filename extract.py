@@ -59,29 +59,65 @@ def get_team_data(base, team):
     #Find all statistical data and appropriate name
     stats_names = soup.find_all(class_="label-name")
     team_stats = soup.find_all(class_="label-data")
-    
+    #For every stat, put the stats in this team's part of the dictionary
     for stat_name_html,value_html in zip(stats_names,team_stats):
         stat_name = stat_name_html.get_text()
         value = value_html.get_text()
-        print stat_name
-        print value
+        debug_print(stat_name)
+        debug_print(value)
         if stat_name != " ":
+            #add value to the list of values at team[stat_name]
             team.setdefault(stat_name, []).append(value)
-    print "-------------"        
+    debug_print("-------------")
 
 def get_all_teams_data(base, teams_dict):
     "For the given teams, acquire general world cup data for each"
     for team in teams_dict:
         get_team_data(base,teams_dict[team])
 
+def get_cup_match_data(base, extension):
+    "For the given world cup, get match data"
+    #Request page
+    page = requests.get(base + extension)
+    #Parse html
+    soup = BeautifulSoup(page.content, 'html.parser')
+    #Make regex to find match data
+    regex = re.compile("match")
+    #Find links that match the regex
+    links = soup.find_all(_class=regex)
+    
 #Main section, do this:
-teams_website = 'http://www.fifa.com/fifa-tournaments/teams/search.html'
+base = "http://www.fifa.com"
+teams_website = base + '/fifa-tournaments/teams/search.html'
 team_dictionary = get_teams(teams_website)
-#if debug:
-    #pretty_print_dict(team_dictionary)
+get_all_teams_data(base,team_dictionary)
 
-country_names = {'Brazil'}
-test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
-get_all_teams_data('http://www.fifa.com', test_dict)
-if debug:
-    pretty_print_dict(test_dict)
+#Debug subset
+#country_names = {'Brazil'}
+#test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
+#get_all_teams_data(base, test_dict)
+#if debug:
+#    pretty_print_dict(test_dict)
+
+#get_cup_match_data(base,"/worldcup/archive/uruguay1930/matches/index.html")
+
+#-------------------------------------------
+#TODONE: General stats per team
+#        Appearances, Matches Played, Goals Scored, and Average Goals
+
+#TODO: Get list of editions 
+#http://www.fifa.com/fifa-tournaments/archive/worldcup/index.html
+
+#TODO: Specific edition stats per team
+#http://www.fifa.com/fifa-tournaments/teams/association=USA/index.html
+# Edition, Placement, Matches Played, Wins, Draws, Losses, Goals Scored, Goals Against, Goals Scored Average, Goals Against Average
+
+#TODO: General stats per edition
+#http://www.fifa.com/worldcup/archive/uruguay1930/statistics/index.html
+#Matches Played, Goals Scored, Average Card per Match, Goals per Match 
+
+#TODO: Matches per edition
+#http://www.fifa.com/worldcup/archive/uruguay1930/matches/index.html
+#Group Number, Date, Time, Venue, Stadium, WinningTeamName, LosingTeamName, WinningTeamScore, LosingTeamScore
+
+#TODO: Players????? oh dear
