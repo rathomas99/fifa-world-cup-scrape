@@ -398,6 +398,53 @@ WHERE g.type=’Penalty’ and g.PlayerID==pid.playerId
 GROUP BY g.playerID
 \end{verbatim}
 
+\section{Query for Team History}
+\begin{verbatim}
+SELECT c.name, c.year, t1.name, t2.name
+FROM  cup c. team t2,match m
+WHERE m.cupyear=c.cupyear
+AND m.teamID1=t1.teamID
+AND m.teamID2=t2.teamID
+
+SELECT c.Name,t.name , cm.cupyear, cm.rank
+FROM team t, cupmember cm, cup c
+WHERE t.teamId=cm.teamId
+AND c.cupyear=cm.cupyear
+
+SELECT p.name,m.name,p.time,p.type
+FROM penalty p, match m,player pl
+WHERE m.matchID=p.matchID
+AND p1.playerID=p.playerID
+\end{verbatim}
+
+\section{Query for a given Cup}
+\begin{verbatim}
+--Teams
+CREATE VIEW participating_team_ids AS
+SELECT cm.teamID
+FROM CupMember cm
+WHERE cm.CupYear=SelectedYear;
+
+--Ranks
+SELECT t.name, cm.rank
+FROM participating_team_ids ids, CupMember cm,Team t
+WHERE ids.teamID==t.TeamID
+AND ids.teamID==cm.teamID
+AND cm.CupYear=selected year
+
+--Regular Goals
+SELECT g.matchID, count(g.time)
+FROM Goal g, match m
+WHERE g.type=’Regular’ and g.matchID==m.matchID
+GROUP BY g.matchID
+
+--Penalty shots
+SELECT g.matchID, count(g.time)
+FROM Goal g, match m
+WHERE g.type=’Penalty’ and g.matchID==m.matchID
+GROUP BY g.matchID
+\end{verbatim}
+
 \section{Pseudo code for Extract and Transform Task}
 \lstinputlisting[language=Python]{extractphase2.py}
 
