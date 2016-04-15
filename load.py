@@ -40,6 +40,7 @@ def create_player_table(cursor):
     """CREATE TABLE PLAYER (
     FIRST_NAME  CHAR(20) NOT NULL,
     LAST_NAME  CHAR(20)),
-    ID INTEGER
+    PID INTEGER,
+    PRIMARY KEY (PID)
     """
     safe_execute(cursor, sql)
