@@ -349,19 +349,20 @@ This query tells users what referee was calling for a particular match. Many peo
 \end{figure}
 
 \section{Query for Super Stars}
-\begin{verbatim}
-	Query for Super Stars:
-	/*Get super stars*/
-	CREATE VIEW super_stars AS
-	SELECT tm1.playerID,cm.CupYear
-	FROM CupMember cm, TeamMember tm1, TeamMember tm2.
-	WHERE tm1.playerID==tm2.playerID
-	AND tm1.year!=tm2.year
-	AND cm.TeamID=tm1.teamID
-\end{verbatim}
+\begin{lstlisting}[language=SQL]
+--Get super stars
+CREATE VIEW super_stars AS
+SELECT tm1.playerID,cm.CupYear
+FROM CupMember cm, TeamMember tm1, TeamMember tm2.
+WHERE tm1.playerID==tm2.playerID
+AND tm1.year!=tm2.year
+AND cm.TeamID=tm1.teamID
+\end{lstlisting}
+
+\newpage
 
 \section{Query for a Given Player}
-\begin{verbatim}
+\begin{lstlisting}[language=SQL]
 --Players with said name
 CREATE VIEW player_ids AS
 SELECT p.playerID
@@ -396,10 +397,12 @@ SELECT g.playerID, count(g.playerID)
 FROM Goal g, player_ids pids
 WHERE g.type=’Penalty’ and g.PlayerID==pid.playerId
 GROUP BY g.playerID
-\end{verbatim}
+\end{lstlisting}
+
+\newpage
 
 \section{Query for Team History}
-\begin{verbatim}
+\begin{lstlisting}[language=SQL]
 SELECT c.name, c.year, t1.name, t2.name
 FROM  cup c. team t2,match m
 WHERE m.cupyear=c.cupyear
@@ -415,10 +418,10 @@ SELECT p.name,m.name,p.time,p.type
 FROM penalty p, match m,player pl
 WHERE m.matchID=p.matchID
 AND p1.playerID=p.playerID
-\end{verbatim}
+\end{lstlisting}
 
 \section{Query for a given Cup}
-\begin{verbatim}
+\begin{lstlisting}[language=SQL]
 --Teams
 CREATE VIEW participating_team_ids AS
 SELECT cm.teamID
@@ -443,12 +446,17 @@ SELECT g.matchID, count(g.time)
 FROM Goal g, match m
 WHERE g.type=’Penalty’ and g.matchID==m.matchID
 GROUP BY g.matchID
-\end{verbatim}
+\end{lstlisting}
+\newpage
 
 \section{Pseudo code for Extract and Transform Task}
+The pseudo code for extracting can be thoroughly extended.
+The basic process is to grab the html of a website, parse it, and then execute a regex on its contents to capture data. The following is a code snippet:
 \lstinputlisting[language=Python]{extractphase2.py}
 
+\newpage
 \section{Pseudo code For Load Task}
+The following is a code snippet:
 \lstinputlisting[language=Python]{loadphase2.py}
 
 
