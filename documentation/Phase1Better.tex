@@ -4,6 +4,7 @@
 \usepackage{graphicx}
 \usepackage{enumitem}
 \usepackage{hyperref}
+\usepackage{listings}
 
 \begin{document}
 \maketitle
@@ -330,6 +331,78 @@ This query returns information about a specific match. It will give back what st
 This query tells users who the most aggressive players are. The metric of aggressiveness is determined by how many penalties they accumulate. It is interesting to see the human side of soccer and how vicious it can get.
 \paragraph{Query for a Given Match's Referee}
 This query tells users what referee was calling for a particular match. Many people assume referees are biased against the team that they like. By using this query, they could see if the referee really is biased against their favorite team.
+
 \part{Phase 2 Documentation}
+
+\section{ER Model}
+\begin{figure}[ph]
+	\centering{\includegraphics[width=\textwidth]{ermodel}}
+	\caption {ER Model}
+	\label{ermodel}
+\end{figure}
+
+\section{Relational Schema}
+\begin{figure}[ph]
+	\centering{\includegraphics[width=\textwidth]{relschema}}
+	\caption{Relational Schema}
+	\label{relschema}
+\end{figure}
+
+\section{Query for Super Stars}
+\begin{verbatim}
+	Query for Super Stars:
+	/*Get super stars*/
+	CREATE VIEW super_stars AS
+	SELECT tm1.playerID,cm.CupYear
+	FROM CupMember cm, TeamMember tm1, TeamMember tm2.
+	WHERE tm1.playerID==tm2.playerID
+	AND tm1.year!=tm2.year
+	AND cm.TeamID=tm1.teamID
+\end{verbatim}
+
+\section{Query for a Given Player}
+\begin{verbatim}
+--Players with said name
+CREATE VIEW player_ids AS
+SELECT p.playerID
+FROM player p
+WHERE p.name=selected_name
+
+--Teams those players were on
+CREATE VIEW team_ids AS
+SELECT tm.teamID, pids.playerID
+FROM TeamMember tm,player_ids pids
+WHERE tm.playerID=pids.p
+
+--Team Names
+SELECT t.name
+FROM team_ids tids, team t
+WHERE t.teamID=tids.teamID
+
+--Cups those players were in
+CREATE VIEW cup_years AS
+SELECT cm.CupYear, tid.PlayerID
+FROM CupMember cm, team_ids tids
+WHERE cm.teamID=            tids.TeamID
+
+--Regular Goals
+SELECT g.playerID, count(g.playerID)
+FROM Goal g, player_ids pids
+WHERE g.type=’Regular’ and g.PlayerID==pid.playerId
+GROUP BY g.playerID
+
+--Penalty shots
+SELECT g.playerID, count(g.playerID)
+FROM Goal g, player_ids pids
+WHERE g.type=’Penalty’ and g.PlayerID==pid.playerId
+GROUP BY g.playerID
+\end{verbatim}
+
+\section{Pseudo code for Extract and Transform Task}
+\lstinputlisting[language=Python]{extractphase2.py}
+
+\section{Pseudo code For Load Task}
+\lstinputlisting[language=Python]{loadphase2.py}
+
 
 \end{document}  
