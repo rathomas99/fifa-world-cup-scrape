@@ -48,7 +48,42 @@ def get_teams(website):
     #Return the team dictionary    
     return team_dictionary
 
+def get_team_data(base, team):
+    "For the given team, acquire general world cup data"
+    #Find the team's webpage 
+    link = team["link"]
+    #Get the website html
+    page = requests.get(base + link)
+    #Parse the website html
+    soup = BeautifulSoup(page.content, 'html.parser')
+    #Find all statistical data and appropriate name
+    stats_names = soup.find_all(class_="label-name")
+    team_stats = soup.find_all(class_="label-data")
+    
+    for stat_name_html,value_html in zip(stats_names,team_stats):
+        stat_name = stat_name_html.get_text()
+        value = value_html.get_text()
+        counter = 0
+        if stat_name in team:
+            stat_name = stat_name + str(counter)
+            counter = counter + 1
+        if stat_name != " ":
+            team[stat_name] = value
+            
+
+def get_all_teams_data(base, teams_dict):
+    "For the given teams, acquire general world cup data for each"
+    for team in teams_dict:
+        get_team_data(base,teams_dict[team])
+
+#Main section, do this:
 teams_website = 'http://www.fifa.com/fifa-tournaments/teams/search.html'
-links = get_teams(teams_website)
+team_dictionary = get_teams(teams_website)
+#if debug:
+    #pretty_print_dict(team_dictionary)
+
+country_names = {'Brazil'}
+test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
+get_all_teams_data('http://www.fifa.com', test_dict)
 if debug:
-    pretty_print_dict(links)
+    pretty_print_dict(test_dict)
