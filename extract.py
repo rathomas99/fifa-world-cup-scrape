@@ -75,15 +75,13 @@ def get_all_teams_data(base, teams_dict):
     for team in teams_dict:
         get_team_data(base,teams_dict[team])
 
-def get_cup_match_data(base, extension):
-    "For the given world cup, get match data"
+def get_cup_match_links(base, extension):
+    "For the given world cup, get link to match webpage"
     #Request page
     page = requests.get(base + extension)
     #Parse html
     soup = BeautifulSoup(page.content, 'html.parser')
-    #Make regex to find match data
-    #regex = re.compile("result")
-    #Find links that match the regex
+    #Find divs that match "mu result"
     results = soup.find_all("div",class_="mu result")
     links = []
     #For every resulting div, find the link
@@ -94,14 +92,34 @@ def get_cup_match_data(base, extension):
     debug_print(links)
     return links
 
+def get_match_data(base,extension):
+    "For the given match, get data"
+    #Request page
+    page = requests.get(base + extension)
+    #Parse html
+    soup = BeautifulSoup(page.content, 'html.parser')
+    #Find divs that match "mh result"
+    results = soup.find_all("div",class_="mh result")
+    
+    #For every resulting div, find the match information
+    for result in results:
+        debug_print(result.prettify())
+    
+
+
+
+
 #Main section, do this:
 base = "http://www.fifa.com"
-teams_website = base + '/fifa-tournaments/teams/search.html'
-team_dictionary = get_teams(teams_website)
-#get_all_teams_data(base,team_dictionary)
-debug_print("--------------------------------")
-get_cup_match_data(base,"/worldcup/archive/uruguay1930/matches/index.html")
 
+#teams_website = base + '/fifa-tournaments/teams/search.html'
+#team_dictionary = get_teams(teams_website)
+#get_all_teams_data(base,team_dictionary)
+
+#debug_print("--------------------------------")
+
+#get_cup_match_links(base,"/worldcup/archive/uruguay1930/matches/index.html")
+get_match_data(base,"/worldcup/matches/round=201/match=1093/index.html#")
 
 #Debug subset
 #country_names = {'Brazil'}
