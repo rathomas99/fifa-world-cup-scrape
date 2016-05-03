@@ -82,15 +82,21 @@ def get_cup_match_data(base, extension):
     #Parse html
     soup = BeautifulSoup(page.content, 'html.parser')
     #Make regex to find match data
-    regex = re.compile("match")
+    #regex = re.compile("result")
     #Find links that match the regex
-    links = soup.find_all(_class=regex)
-    
+    links = soup.find_all("div",class_="mu result")
+    for link in links:
+        debug_print(link.prettify())
+        actual_linky_dink = link.find("a")
+
 #Main section, do this:
 base = "http://www.fifa.com"
 teams_website = base + '/fifa-tournaments/teams/search.html'
 team_dictionary = get_teams(teams_website)
-get_all_teams_data(base,team_dictionary)
+#get_all_teams_data(base,team_dictionary)
+debug_print("--------------------------------")
+get_cup_match_data(base,"/worldcup/archive/uruguay1930/matches/index.html")
+
 
 #Debug subset
 #country_names = {'Brazil'}
