@@ -84,10 +84,15 @@ def get_cup_match_data(base, extension):
     #Make regex to find match data
     #regex = re.compile("result")
     #Find links that match the regex
-    links = soup.find_all("div",class_="mu result")
-    for link in links:
-        debug_print(link.prettify())
-        actual_linky_dink = link.find("a")
+    results = soup.find_all("div",class_="mu result")
+    links = []
+    #For every resulting div, find the link
+    for result in results:
+        debug_print(result.prettify())
+        link = result.find("a")['href']
+        links.append(link)
+    debug_print(links)
+    return links
 
 #Main section, do this:
 base = "http://www.fifa.com"
