@@ -1,4 +1,17 @@
 *.gitignore~
+#Core latex/pdflatex auxilliary files
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+
 *.py~
 # Byte-compiled / optimized / DLL files
 __pycache__/

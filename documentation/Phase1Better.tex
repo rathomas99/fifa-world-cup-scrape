@@ -1,9 +1,10 @@
 \documentclass{article}
-\title{World Cup Soccer Database - Phase 1}
+\title{World Cup Soccer Database}
 \author{Rebecca Thomas, Dmytry Berkout}
 \usepackage{graphicx}
 \usepackage{enumitem}
 \usepackage{hyperref}
+\usepackage{listings}
 
 \begin{document}
 \maketitle
@@ -19,7 +20,7 @@ This document is an introduction to the MondialDB project. It will provide detai
 \subsection{Purpose of the Project}
 The purpose of the project is to create a database that can access various details about the World Cup. It will contain soccer team names and members and statistics such as player records, team records, penalty information, and the rank obtained. Another major part of this project is creating a tool to extract information about the World Cup from the Internet. It will be able to extract information from various websites and put them into a database readable format. The tool will be able to deal with data from European and American websites and transform it into a standard format. This project will allow for easy and readable queries.
 
-\subsection{Purpose of the Phase}
+\subsection{Purpose of Phase 1}
 In this phase of the project we are to design the database and receive feedback on it. We will attempt to catch any significant errors in design at this stage and prevent a broken or severely flawed implementation from going through. If design errors are caught early it will require considerably less work to fix them. 
 
 \section{Problems and Solutions}
@@ -61,6 +62,7 @@ The assumptions we made are the following:
 \item Our users are average people who do not have a computer science background but are able to comfortably use the internet.
 \end{itemize}
 
+\part{Phase 1 Documentation}
 \section{Environment and Requirements Analysis}
 
 \subsection{Using MondialDB}
@@ -200,52 +202,6 @@ The tasks are the following:
 
 \newpage
 
-\subsection{Webpage Server Task}
-\begin{description}[noitemsep,align=right]
-  \item[Task Label] WPST
-  \item[Task Name] Webpage Server Task
-  \item[Performer] Web-server
-  \item[Purpose] Sends webpage to user. Takes requests for data or returns results from a previous query.
-  \item[Enabling Condition] After database creation
-  \item[Description] The webpage server will act as the mediator between the MondialDB and the user. It will take user requests and send them to a process that can indirectly interact with MondialDB. It will accept any user connections.
-  \item[Frequency] Always on
-  \item[Duration] As long as the database is active
-  \item[Importance]  Most Important
-  \item[Maximum Delay] Response delay to user requests should be short and less than 10 seconds.
-  \item[Input] User connection or Formatted Results
-  \item[Output] Webpage for user to interact with
-  \item[Document Use] Formatted Results -\textgreater{} Weppage
-  \item[Operations Performed] Generate and send webpage to user. If new user, then do the operations in WPST.1. Otherwise, serve up the query results in a table.
-  \item[Subtasks] Introductory Webpage Task (WPST.1)
-  \item[Error Conditions] The web-server fails or does not respond. Too many users connect at once.
-\end{description}
-
-
-\newpage
-
-\subsubsection{Introductory Webpage Task}
-\begin{description}[noitemsep,align=right]
-  \item[Task Label] WPST.1
-  \item[Task Name] Introductory Webpage Task
-  \item[Performer] Web-server
-  \item[Purpose] To give a new user a webpage to interact with. Generate the webpage and interface.
-  \item[Enabling Condition] On access to MondialDB website
-  \item[Description] The web-server will generate a website on visit from user. From here the user will be able to do database queries.
-  \item[Frequency] When a user accesses the website
-  \item[Duration] Webpage generation should be fast and less than a few seconds. The webpage should remain active as long as the user doesn't disconnect.  There might be a possible timeout for inactive users. 
-  \item[Importance] Important
-  \item[Maximum Delay] In ideal network conditions, it should take less than 5 seconds.
-  \item[Input] User connection
-  \item[Output] Introductory Webpage for the user to interact with
-  \item[Document Use] Webpage
-  \item[Operations Performed] Generate introductory webpage for user to interact with. Handle valid user requests by passing them on to send data to Web Query Processor. Handle invalid user requests by ignoring them and informing the user why they are invalid.
-  \item[Subtasks] None
-  \item[Error Conditions] The web-server fails or does not respond. Too many users connect at once.
-
-\end{description}
-
-\newpage
-
 \subsection{Web Query Processor}
 \begin{description}[noitemsep,align=right]
   \item[Task Label] WQPT
@@ -259,7 +215,7 @@ The tasks are the following:
   \item[Importance] Important
   \item[Maximum Delay] Response delay to user requests should be short and less than 10 seconds.
   \item[Input] User-inputted form data from the Webpage
-  \item[Output] Sends Query type to Webpage SQL Processor Task. Query types include \\QGC, QGP, QSS, QTH, QCP, QPCC, QPCT, QGM, and GMMG.
+  \item[Output] Sends Query type to Webpage SQL Processor Task. See Query Types.
   \item[Document Use] Webpage -\textgreater{} Query
   \item[Operations Performed] Validates queries and determines query type.
   \item[Subtasks] None
@@ -292,13 +248,13 @@ The tasks are the following:
     
     QCP(Query for Country's Players)
     
-    QPCC(Query for Penalty Cards in a Cup)
+    QPCF(Query for Country's Flag)
     
-    QPCT (Query for Penalty Cards given to a Team)
+    QMA (Query for Match's Attendance)
     
-    QGM (Query for a Given Match)
+  	QAP (Query for Aggressive Players)
     
-    QMMG (Query for Matches with the Most Goals)
+    QGMR (Query for a Given Match's Referee)
     
   \item[Output] Sends SQL query to MondialDB
   \item[Document Use] Query  
@@ -322,26 +278,7 @@ The tasks are the following:
   \item[Importance] Most Important
   \item[Maximum Delay] Response delay to user requests should be short and less than 10 seconds.
   \item[Input] For a user-specified query, Database Results
-  \item[Output] The Formatted Result from the following results:
-  
-  RQGC (Result for Query for a Given Cup)
-  
-  RQGP (Result for Query for a Given Player) 
-  
-  RQSS (Result for Query for Super Stars)
-  
-  RQTH (Result for query for Team History)
-  
-  RQCP (Result for query for Country's Players)
-  
-  RQPCC (Result for Query for Penalty Cards in a Cup)
-  
-  RQPCT (Result for query for Penalty Cards for a team)
-  
-  RQGM (Result for Query for Given Match) 
-  
-  RQMMG (Result for query for Matches with the Most Goals)
-  
+  \item[Output] The Formatted Result from the results  
   \item[Document Use] Database Results -\textgreater{} Formatted Results
   \item[Operations Performed] Sends query results to Webpage Server Task 
   \item[Subtasks] None
@@ -369,20 +306,7 @@ See page \pageref{taskflow2} for repeated Task Flow Diagram. The documents are t
 	\label{taskflow2}
 \end{figure}
 
-\clearpage
-
-\subsection{Webpage}
-The website will display either an introductory webpage or a webpage that
-displays results from a previous query. 
-\begin{itemize}
-	\item Title
-	\item Description
-	\item Link-to-Usage-Documentation 
-	\item Query-Request-Form
-	\item Result-Table
-\end{itemize}
-
-\subsection{Query}
+\subsection{Queries}
 The types of Queries:
 \begin{itemize}
 	\label{queries}
@@ -391,159 +315,164 @@ The types of Queries:
 	\item QSS (Query for Super Stars)
 	\item QTH (Query for Team History)
 	\item QCP (Query for Country's Players)
-	\item QPCC (Query for Penalty Cards in a Cup)
-	\item QPCT (Query for Penalty Cards given to a Team)
-	\item QGM (Query for a Given Match)
-	\item QMMG (Query for Matches with the Most Goals)
-\end{itemize}
-Each query might not require all parts of the following general document form.
-\begin{itemize}
-	\item Query-Type (See above)
-	\item Cup-Year (All, 1930, 1934, 1938, ...)
-	\item Team-Name (All, Brazil, Germany, Italy, ...)
-	\item Player-Name (All, Carbajal, Lahm, Klose, ...)
-	\item Want-Match-Info (True, False)
-	\item Match-Query-Info
-	\begin{itemize}
-		\item Winning-Team (Any, Brazil, Germany, Italy, ...)
-		\item Losing-Team (Any, Brazil, ...)
-		\item Get-Match-With-Most-Goals-For-Winning-Team (True, False)
-	\end{itemize}
-	\item Want-Penalty-Cards (True, False)
+	\item QPCF(Query for Country's Flag)
+	\item QMA (Query for Match's Attendance)
+	\item QGMS (Query for Aggressive Players)
+	\item QGMR (Query for a Given Match's Referee)
 \end{itemize}
 
-\subsection{Database Results}
-The Database Results are the exact results from MondialDB.
-The Result-Data will be in the format that MondialDB returns.
-\begin{itemize}
-	\item Query-Type (See section \ref{queries} on page \pageref{queries}  for the list of queries)
-	\item Result-Type (See section \ref{results} on page \pageref{results}  for the list of queries)
-	\item Result-Data
-\end{itemize}
+\paragraph{Query for Country's Flag}
+This query returns information about a country's flag. Most notably this includes a link to a picture of that country's flag. The query is interesting because it adds an extra dimension to the database. Users might find it easier
+to recognize a country by its flag instead of by its name. Others might be curious and be inspired to learn more interesting information about flags.
+Flags traditionally represent countries. They are symbols for the people of that country to rally around and to represent. They represent the history of the nation. Thus, they are interesting.
+\paragraph{Query for Match's Attendance}
+This query returns information about a specific match. It will give back what stadium the match was held in. It will also tell the user how many people attended that particular match. Attendance information is wonderfully informative. The user could try to find out what teams are most popular, what stadiums are most popular, or what host countries are most popular.  
+\paragraph{Query for Aggressive Players}
+This query tells users who the most aggressive players are. The metric of aggressiveness is determined by how many penalties they accumulate. It is interesting to see the human side of soccer and how vicious it can get.
+\paragraph{Query for a Given Match's Referee}
+This query tells users what referee was calling for a particular match. Many people assume referees are biased against the team that they like. By using this query, they could see if the referee really is biased against their favorite team.
 
-\subsection{Formatted Results}
-The types and document forms for Formatted Results:
-\begin{itemize}
-	\label{results}
-	\item RQGC (Result for Query for a Given Cup)
-	\begin{itemize}
-		\item Cup-Year
-		\item Number-Goals-Per-Team-List
-		\item Team-Name-List
-		\item Team-Position-List
-	\end{itemize}
-	\item RQGP (Result for Query for a Given Player) 
-	\begin{itemize}
-		\item Player-Name
-		\item Cup-Name-List
-		\item Number-Goals-Per-Cup-List
-		\item Number-Penalties-Per-Cup-List
-		\item Team-Name-List
-	\end{itemize}
-	\item RQSS (Result for Query for Super Stars)
-	\begin{itemize}
-		\item Player-Name
-		\item Cup-Name-List
-		\item Number-Goals-Per-Cup-List
-		\item Number-Penalties-Per-Cup-List
-		\item Team-Name-List
-	\end{itemize}
-	\item RQTH (Result for query for Team History)
-	\begin{itemize}
-		\item Team-Name
-		\item Cup-Name-List
-		\item Number-Goals-Per-Cup-List
-	\end{itemize}
-	\clearpage
-	\item RQCP (Result for query for Country's Players)
-		\begin{itemize}
-			\item Team-Name
-			\item Player-List
-			\item Number-Goals-Per-Player-List
-			\item Number-Penalties-Per-Player-List
-		\end{itemize}
-	\item RQPCC (Result for Query for Penalty Cards in a Cup)
-	\begin{itemize}
-		\item Cup-Year
-		\item Number-Penalties-Per-Team-List
-		\item Team-Name-List
-	\end{itemize}
-	\item RQPCT (Result for query for Penalty Cards for a team)
-	\begin{itemize}
-		\item Team-Name
-		\item Cup-Name-List
-		\item Number-Goals-Per-Cup-List
-		\item Number-Penalties-Per-Cup-List
-	\end{itemize}
-	\item RQGM (Result for Query for Given Match) 
-	\begin{itemize}
-		\item Winning-Team-Name
-		\item Losing-Team-Name
-		\item Cup-Name
-		\item Winning-Team-Goals
-		\item Winning-Team-Penalties
-		\item Losing-Team-Goals
-		\item Losing-Team-Penalties
-	\end{itemize}
-	\item RQMMG (Result for query for Matches with the Most Goals) 
-	\begin{itemize}
-		\item Winning-Team-Name
-		\item Losing-Team-Name
-		\item Cup-Name
-		\item Winning-Team-Goals
-		\item Losing-Team-Goals
-	\end{itemize}
-\end{itemize}
+\part{Phase 2 Documentation}
 
+\section{ER Model}
+\begin{figure}[ph]
+	\centering{\includegraphics[width=\textwidth]{ermodel}}
+	\caption {ER Model}
+	\label{ermodel}
+\end{figure}
 
-\subsection{Soccer Websites}
-The Soccer Websites will be scraped for World Cup data to insert into MondialDB.
-\begin{itemize}
-	\item SW-ID
-	\item URL
-	\item Publisher
-\end{itemize}
+\section{Relational Schema}
+\begin{figure}[ph]
+	\centering{\includegraphics[width=\textwidth]{relschema}}
+	\caption{Relational Schema}
+	\label{relschema}
+\end{figure}
 
-\subsection{Unformatted Data}
-The Unformatted Data is extracted data from the Soccer Websites. 
-The HTML-Selector is the exact path of where to find the data on the
-relevant webpage. The access date is included because websites change over time.
-\begin{itemize}
-	\item SW-ID
-	\item Access-Date
-	\item HTML-Selector
-	\item Data-Value
-\end{itemize}
+\section{Query for Super Stars}
+\begin{lstlisting}[language=SQL]
+--Get super stars
+CREATE VIEW super_stars AS
+SELECT tm1.playerID,cm.CupYear
+FROM CupMember cm, TeamMember tm1, TeamMember tm2.
+WHERE tm1.playerID==tm2.playerID
+AND tm1.year!=tm2.year
+AND cm.TeamID=tm1.teamID
+\end{lstlisting}
 
-\subsection{Formatted Data}
-The Formatted Data is a transformation of the Unformatted Data into
-something that MondialDB will accept. 
+\newpage
 
-\begin{itemize}
-	\item SW-ID
-	\item Access-Date
-	\item Number-Goals
-	\item Number-Penalties
-	\item Cup-Year (All, 1930, 1934, 1938, ...)
-	\item Team-Name (All, Brazil, Germany, Italy, ...)
-	\item Player-Name (All, Carbajal, Lahm, Klose, ...)
-	\item Is-Match (True, False)
-	\item Match-Data
-	\begin{itemize}
-		\item Winning-Team (Brazil, Germany, Italy, ...)
-		\item Losing-Team (Brazil, ...)
-		\item Winning-Team-Goals
-		\item Losing-Team-Goals
-	\end{itemize}
-\end{itemize}
+\section{Query for a Given Player}
+\begin{lstlisting}[language=SQL]
+--Players with said name
+CREATE VIEW player_ids AS
+SELECT p.playerID
+FROM player p
+WHERE p.name=selected_name
 
-\subsection{SQL Script}
-The SQL Script is the result from the Data Loading Task (ETLT.3).
-It will be run on MondialDB by the python script handling ETLT.3.
-\begin{itemize}
-	\item File-Name 
-	\item Date-Executed
-	\item File-Contents
-\end{itemize} 
+--Teams those players were on
+CREATE VIEW team_ids AS
+SELECT tm.teamID, pids.playerID
+FROM TeamMember tm,player_ids pids
+WHERE tm.playerID=pids.p
+
+--Team Names
+SELECT t.name
+FROM team_ids tids, team t
+WHERE t.teamID=tids.teamID
+
+--Cups those players were in
+CREATE VIEW cup_years AS
+SELECT cm.CupYear, tid.PlayerID
+FROM CupMember cm, team_ids tids
+WHERE cm.teamID=            tids.TeamID
+
+--Regular Goals
+SELECT g.playerID, count(g.playerID)
+FROM Goal g, player_ids pids
+WHERE g.type=’Regular’ and g.PlayerID==pid.playerId
+GROUP BY g.playerID
+
+--Penalty shots
+SELECT g.playerID, count(g.playerID)
+FROM Goal g, player_ids pids
+WHERE g.type=’Penalty’ and g.PlayerID==pid.playerId
+GROUP BY g.playerID
+\end{lstlisting}
+
+\newpage
+
+\section{Query for Team History}
+\begin{lstlisting}[language=SQL]
+SELECT c.name, c.year, t1.name, t2.name
+FROM  cup c. team t2,match m
+WHERE m.cupyear=c.cupyear
+AND m.teamID1=t1.teamID
+AND m.teamID2=t2.teamID
+
+SELECT c.Name,t.name , cm.cupyear, cm.rank
+FROM team t, cupmember cm, cup c
+WHERE t.teamId=cm.teamId
+AND c.cupyear=cm.cupyear
+
+SELECT p.name,m.name,p.time,p.type
+FROM penalty p, match m,player pl
+WHERE m.matchID=p.matchID
+AND p1.playerID=p.playerID
+\end{lstlisting}
+
+\section{Query for a given Cup}
+\begin{lstlisting}[language=SQL]
+--Teams
+CREATE VIEW participating_team_ids AS
+SELECT cm.teamID
+FROM CupMember cm
+WHERE cm.CupYear=SelectedYear;
+
+--Ranks
+SELECT t.name, cm.rank
+FROM participating_team_ids ids, CupMember cm,Team t
+WHERE ids.teamID==t.TeamID
+AND ids.teamID==cm.teamID
+AND cm.CupYear=selected year
+
+--Regular Goals
+SELECT g.matchID, count(g.time)
+FROM Goal g, match m
+WHERE g.type=’Regular’ and g.matchID==m.matchID
+GROUP BY g.matchID
+
+--Penalty shots
+SELECT g.matchID, count(g.time)
+FROM Goal g, match m
+WHERE g.type=’Penalty’ and g.matchID==m.matchID
+GROUP BY g.matchID
+\end{lstlisting}
+\newpage
+
+\section{Country's Players Query}
+\begin{lstlisting}[language=SQL]
+--list of teams in cups
+CREATE VIEW teams_ids AS
+SELECT cm.teamIds
+FROM CupMember cm
+--Matches teams participated in
+CREATE VIEW matchs_ids AS
+Distinct(SELECT m.teamID1,m.matchID
+FROM match m
+JOIN 
+SELECT m.teamID2, m.matchID
+FROM match m )
+\end{lstlisting}
+
+\section{Pseudo code for Extract and Transform Task}
+The pseudo code for extracting can be thoroughly extended.
+The basic process is to grab the html of a website, parse it, and then execute a regex on its contents to capture data. The following is a code snippet:
+\lstinputlisting[language=Python]{extractphase2.py}
+
+\newpage
+\section{Pseudo code For Load Task}
+The following is a code snippet:
+\lstinputlisting[language=Python]{loadphase2.py}
+
 
 \end{document}  
