@@ -104,19 +104,41 @@ def get_match_data(base,extension):
     #For every resulting div, find the match information
     for result in results:
         #debug_print(result.prettify())
+        #match id
+        match_id = result["data-id"]
+        #stadium and venue
         stadium = result.find("span",class_="mh-i-stadium").get_text()
         venue = result.find("span",class_="mh-i-venue").get_text()
+        #time
         given_datetime = result.find("div",class_="mh-i-datetime").get_text()
         day_month_numbers = result.find("div",class_="s-score s-date-HHmm")["data-daymonthutc"]
+        #Round = Groups/Semifinals/Finals
         round = result.find("div",class_="mh-i-round").get_text()
+        #Status = Full-time
         status = result.find("div",class_="s-status").get_text()
+        #Home and away team ids
         home_team_id = result.find("div",class_="t home")["data-team-id"]
         away_team_id = result.find("div",class_="t away")["data-team-id"]
+        #Home and away scores
         score = result.find("span",class_="s-scoreText").get_text()
         home_score, away_score = score.split("-")
+        #Reason of win
+        reason_win = result.find("span",class_="text-reasonwin").get_text()
+        #Find player ids of the players that scored for the home team
+        home_scorers_html = result.find("div",class_="t-scorer home")
+        home_scorers = home_scorers_html.find_all("li",class_="mh-scorer")
+        home_scorer_ids = []
+        for home_scorer in home_scorers:
+            id = home_scorer.find("span").find("div")["data-player-id"]
+            home_scorer_ids.append(id)
+            debug_print(id)
+        
         debug_print(stadium + " " + venue + " " +  given_datetime + " " +  day_month_numbers)
         debug_print(round + " " + status + " " + home_team_id + " " + away_team_id)
         debug_print(home_score + " " + away_score)
+        debug_print(reason_win + " " + match_id)
+
+
 
 #Main section, do this:
 base = "http://www.fifa.com"
