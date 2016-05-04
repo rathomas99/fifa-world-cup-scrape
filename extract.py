@@ -103,11 +103,20 @@ def get_match_data(base,extension):
     
     #For every resulting div, find the match information
     for result in results:
-        debug_print(result.prettify())
-    
-
-
-
+        #debug_print(result.prettify())
+        stadium = result.find("span",class_="mh-i-stadium").get_text()
+        venue = result.find("span",class_="mh-i-venue").get_text()
+        given_datetime = result.find("div",class_="mh-i-datetime").get_text()
+        day_month_numbers = result.find("div",class_="s-score s-date-HHmm")["data-daymonthutc"]
+        round = result.find("div",class_="mh-i-round").get_text()
+        status = result.find("div",class_="s-status").get_text()
+        home_team_id = result.find("div",class_="t home")["data-team-id"]
+        away_team_id = result.find("div",class_="t away")["data-team-id"]
+        score = result.find("span",class_="s-scoreText").get_text()
+        home_score, away_score = score.split("-")
+        debug_print(stadium + " " + venue + " " +  given_datetime + " " +  day_month_numbers)
+        debug_print(round + " " + status + " " + home_team_id + " " + away_team_id)
+        debug_print(home_score + " " + away_score)
 
 #Main section, do this:
 base = "http://www.fifa.com"
