@@ -146,7 +146,7 @@ def get_match_data(base,extension):
         debug_print(round + " " + status + " " + home_team_id + " " + away_team_id)
         debug_print(home_score + " " + away_score)
         debug_print(reason_win + " " + match_id)
-        
+
 
 
 #Main section, do this:
@@ -159,7 +159,8 @@ base = "http://www.fifa.com"
 #debug_print("--------------------------------")
 
 #get_cup_match_links(base,"/worldcup/archive/uruguay1930/matches/index.html")
-get_match_data(base,"/worldcup/matches/round=201/match=1093/index.html#")
+#get_match_data(base,"/worldcup/matches/round=201/match=1093/index.html#")
+get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html")
 
 #Debug subset
 #country_names = {'Brazil'}
