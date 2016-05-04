@@ -132,12 +132,21 @@ def get_match_data(base,extension):
             id = home_scorer.find("span").find("div")["data-player-id"]
             home_scorer_ids.append(id)
             debug_print(id)
+        #Find player ids of the players that scored for the away team
+        away_scorers_html = result.find("div",class_="t-scorer away")
+        away_scorers = away_scorers_html.find_all("li",class_="mh-scorer")
+        away_scorer_ids = []
+        for away_scorer in away_scorers:
+            id = away_scorer.find("span").find("div")["data-player-id"]
+            away_scorer_ids.append(id)
+            debug_print(id)
+        
         
         debug_print(stadium + " " + venue + " " +  given_datetime + " " +  day_month_numbers)
         debug_print(round + " " + status + " " + home_team_id + " " + away_team_id)
         debug_print(home_score + " " + away_score)
         debug_print(reason_win + " " + match_id)
-
+        
 
 
 #Main section, do this:
