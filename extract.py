@@ -98,11 +98,11 @@ def get_match_data(base,extension):
     page = requests.get(base + extension)
     #Parse html
     soup = BeautifulSoup(page.content, 'html.parser')
-    #Find divs that match "mh result"
-    results = soup.find_all("div",class_="mh result")
+    #Find first div that match "mh result"
+    result = soup.find("div",class_="mh result")
     
-    #For every resulting div, find the match information
-    for result in results:
+    #Find the match information
+    if result != None:
         #debug_print(result.prettify())
         #match id
         match_id = result["data-id"]
@@ -141,12 +141,25 @@ def get_match_data(base,extension):
             away_scorer_ids.append(id)
             debug_print(id)
         
-        
         debug_print(stadium + " " + venue + " " +  given_datetime + " " +  day_month_numbers)
         debug_print(round + " " + status + " " + home_team_id + " " + away_team_id)
         debug_print(home_score + " " + away_score)
         debug_print(reason_win + " " + match_id)
 
+    report = soup.find("div", class_="match-report")
+    if report != None:
+        #Find referees table
+        officials_html = report.find("div",class_="match-official")
+        officials_row_data = officials_html.find_all("td")
+        #Set up dictionary to be used for officials
+        officials = {}
+        for official in officials_row_data:
+            kind_of_referee = official.find("div",class_="people-kind-name").get_text()
+            name_of_referee = official.find("div",class_="people-name").get_text()
+            #Example Name of Referee: BALWAY Thomas (FRA)
+            name_of_referee,country_of_referee = name_of_referee.split(" (")
+            country_of_referee = country_of_referee[:-1]
+            debug_print(kind_of_referee + "///" + name_of_referee + "///" + country_of_referee)
 
 
 #Main section, do this:
