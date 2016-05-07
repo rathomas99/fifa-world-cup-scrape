@@ -147,6 +147,9 @@ def get_match_data(base,extension):
         debug_print(reason_win + " " + match_id)
 
     report = soup.find("div", class_="match-report")
+    get_report_innards(report)
+
+def get_report_innards(report):
     if report != None:
         #Find referees table
         officials_html = report.find("div",class_="match-official")
@@ -160,6 +163,10 @@ def get_match_data(base,extension):
             name_of_referee,country_of_referee = name_of_referee.split(" (")
             country_of_referee = country_of_referee[:-1]
             debug_print(kind_of_referee + "///" + name_of_referee + "///" + country_of_referee)
+        #TODO FILL DICTIONARY OF OFFICIALS
+        lineup = report.find("div",class_="lineup")
+        #home_lineup = lineup.find("td",class_="home")
+        debug_print(lineup.prettify())
 
 
 #Main section, do this:
