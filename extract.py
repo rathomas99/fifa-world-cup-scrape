@@ -105,7 +105,8 @@ def get_cups(base,extension):
 		#debug_print(result.prettify())
 		name = result.find("div", class_="comp-name").get_text().strip()
 		#Example name: Brazil 2014
-		year = str(name)[-4:]#last 4 characters of name is the year
+		year = str(name)[-4:]#last 4 characters of name is the year ex. 2014
+		name = str(name)[:-5]#chop off the last 5 characters ex. ' 2014'
 		link = result.find("a")['href']
 		#Example link:
 		#http://www.fifa.com/worldcup/archive/brazil2014/index.html
