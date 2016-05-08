@@ -181,27 +181,9 @@ def get_match_data(base,extension):
 		home_score, away_score = score.split("-")
 		#Reason of win
 		reason_win = result.find("span",class_="text-reasonwin").get_text()
-		#Find player ids of the players that scored for the home team
-		home_scorers_html = result.find("div",class_="t-scorer home")
-		home_scorers = home_scorers_html.find_all("li",class_="mh-scorer")
-		home_scorer_ids = []
-		for home_scorer in home_scorers:
-			id = home_scorer.find("span").find("div")["data-player-id"]
-			home_scorer_ids.append(id)
-			#debug_print(id)
-		#Find player ids of the players that scored for the away team
-		away_scorers_html = result.find("div",class_="t-scorer away")
-		away_scorers = away_scorers_html.find_all("li",class_="mh-scorer")
-		away_scorer_ids = []
-		for away_scorer in away_scorers:
-			id = away_scorer.find("span").find("div")["data-player-id"]
-			away_scorer_ids.append(id)
-			#debug_print(id)
 		
-		#debug_print(stadium + " " + venue + " " +  given_datetime + " " +  day_month_numbers)
-		#debug_print(round + " " + status + " " + home_team_id + " " + away_team_id)
-		#debug_print(home_score + " " + away_score)
-		#debug_print(reason_win + " " + match_id)
+		home_scorer_ids, away_scorer_ids = get_scorers(result)
+		
 		match = {"match_id":match_id, "home_team_id": home_team_id, "away_team_id": away_team_id, "home_score":home_score, "away_score": away_score}
 		match["stadium"] = stadium
 		match["venue"] = venue
@@ -222,6 +204,31 @@ def get_match_data(base,extension):
 	report = soup.find("div", class_="match-report")
 	get_report_innards(report)
 
+	
+def get_scorers(result):
+	"For a match, find players who scored goals"
+	#TODO Find type of goal
+	#TODO Find time of goal
+	#TODO Find number of goals
+	if result != None:
+		#Find player ids of the players that scored for the home team
+		home_scorers_html = result.find("div",class_="t-scorer home")
+		home_scorers = home_scorers_html.find_all("li",class_="mh-scorer")
+		home_scorer_ids = []
+		for home_scorer in home_scorers:
+			id = home_scorer.find("span").find("div")["data-player-id"]
+			home_scorer_ids.append(id)
+			#debug_print(id)
+		#Find player ids of the players that scored for the away team
+		away_scorers_html = result.find("div",class_="t-scorer away")
+		away_scorers = away_scorers_html.find_all("li",class_="mh-scorer")
+		away_scorer_ids = []
+		for away_scorer in away_scorers:
+			id = away_scorer.find("span").find("div")["data-player-id"]
+			away_scorer_ids.append(id)
+			#debug_print(id)
+		return home_scorer_ids, away_scorer_ids
+	
 def get_report_innards(report):
 	#TODO GET ATTENDANCE
 	#TODO GET YEAR
@@ -256,7 +263,6 @@ def get_report_innards(report):
 			away_id = row.find("div")["data-player-id"]
 			away_lineup.append(away_id)
 			
-			
 		debug_print("MATCH REPORT")
 		debug_print(home_lineup)
 		debug_print(away_lineup)
@@ -264,10 +270,16 @@ def get_report_innards(report):
 	return officials
 
 	
+def main():
+	base = "http://www.fifa.com"
+	#links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
+	#debug_print(pretty_print_dict(cups))
+	#load_cups(start_load(),cups)
+	#get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
+	get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html")
 
-	
 #Main section, do this:
-base = "http://www.fifa.com"
+main()
 
 #teams_website = base + '/fifa-tournaments/teams/search.html'
 #team_dictionary = get_teams(teams_website)
@@ -279,10 +291,6 @@ base = "http://www.fifa.com"
 #get_match_data(base,"/worldcup/matches/round=201/match=1093/index.html#")
 #get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html","1930")
 
-
-links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
-debug_print(pretty_print_dict(cups))
-load_cups(start_load(),cups)
 
 #get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
 
