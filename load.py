@@ -1,4 +1,5 @@
-import pymysql.cursors
+import pymysql
+import sys
 
 debug = True
 
@@ -23,21 +24,29 @@ def safe_execute(db, sql):
 			cursor.execute(sql)
 			# Commit changes in the database
 			db.commit()
-			return cursor.fetchone()
+			return cursor.fetchall()
+		except pymysql.DataError as e:
+			print("Data Error " + str(e))
+			db.rollback()
+		except pymysql.ProgrammingError as e:
+			print("Programming Error" + str(e))
+			db.rollback()
 		except:
-			# Rollback in case there is any error											
+			# Rollback in case there is any error	
+			print("SOMETHING HAPPENED")
 			db.rollback()
 
 def insert_cup(db, name,year):		
 	"Insert one world cup edition"
 	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
-	sql = "INSERT INTO CUP (CupYear,CupName) VALUES (" + year + "," + name + ");"
+	sql = "INSERT INTO Cup (CupYear,CupName) VALUES (" + year + ",'" + name + "');"
 	print(sql)
 	safe_execute(db, sql)
 	
 def retrieve_cups(db):
-	sql = "SELECT * FROM CUP"
+	sql = "SELECT * FROM Cup;"
 	print(sql)
+	print("RESULTS---")
 	results = safe_execute(db,sql)
 	print(results)
 	
