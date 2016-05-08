@@ -2,6 +2,7 @@ import requests
 import re
 import pprint
 from bs4 import BeautifulSoup
+import load
 
 debug = True
 
@@ -115,6 +116,16 @@ def get_cups(base,extension):
 		cups[name] = {"link":link, "year":year}
 	debug_print(links)
 	return links,cups		
+
+	
+def start_load():
+	return load.open()
+	
+def load_cups(cursor, cups):
+	for cup in cups:
+		name = cups[cup]["name"]
+		year = cups[cup]["year"]
+		load.insert_cup(cursor,name,year)
 		
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"
