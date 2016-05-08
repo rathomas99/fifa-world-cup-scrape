@@ -75,6 +75,24 @@ def get_all_teams_data(base, teams_dict):
 	for team in teams_dict:
 		get_team_data(base,teams_dict[team])
 
+def get_cups(base,extension):
+	"Find the links of all the world cup editions"
+	#http://www.fifa.com/fifa-tournaments/archive/worldcup/index.html
+	#Request page
+	page = requests.get(base + extension)
+	#Parse html
+	soup = BeautifulSoup(page.content, 'html.parser')
+	#Find li's that match "comp-item"
+	results = soup.find_all("li",class_="comp-item")
+	links = []
+	#For every resulting div, find the link
+	for result in results:
+		#debug_print(result.prettify())
+		link = result.find("a")['href']
+		links.append(link)
+	debug_print(links)
+	return links		
+		
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpage"
 	#Request page
@@ -206,6 +224,9 @@ def get_report_innards(report):
 		debug_print(pretty_print_dict(officials))		
 	return officials
 
+	
+
+	
 #Main section, do this:
 base = "http://www.fifa.com"
 
@@ -217,7 +238,10 @@ base = "http://www.fifa.com"
 
 #get_cup_match_links(base,"/worldcup/archive/uruguay1930/matches/index.html")
 #get_match_data(base,"/worldcup/matches/round=201/match=1093/index.html#")
-get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html","1930")
+#get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html","1930")
+
+
+cup_links = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
 
 #Debug subset
 #country_names = {'Brazil'}
@@ -243,7 +267,7 @@ get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html","1930")
 #http://www.fifa.com/worldcup/archive/uruguay1930/statistics/index.html
 #Matches Played, Goals Scored, Average Card per Match, Goals per Match 
 
-#TODO: Matches per edition
+#TODONE: Matches per edition
 #http://www.fifa.com/worldcup/archive/uruguay1930/matches/index.html
 #Group Number, Date, Time, Venue, Stadium, WinningTeamName, LosingTeamName, WinningTeamScore, LosingTeamScore
 
