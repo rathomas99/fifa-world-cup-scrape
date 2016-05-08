@@ -92,7 +92,7 @@ def get_cup_match_links(base, extension):
 	debug_print(links)
 	return links
 
-def get_match_data(base,extension):
+def get_match_data(base,extension,cup_year):
 	"For the given match, get data"
 	#Request page
 	page = requests.get(base + extension)
@@ -102,6 +102,7 @@ def get_match_data(base,extension):
 	result = soup.find("div",class_="mh result")
 	
 	#Find the match information
+	match = {}
 	if result != None:
 		#debug_print(result.prettify())
 		#match id
@@ -131,7 +132,7 @@ def get_match_data(base,extension):
 		for home_scorer in home_scorers:
 			id = home_scorer.find("span").find("div")["data-player-id"]
 			home_scorer_ids.append(id)
-			debug_print(id)
+			#debug_print(id)
 		#Find player ids of the players that scored for the away team
 		away_scorers_html = result.find("div",class_="t-scorer away")
 		away_scorers = away_scorers_html.find_all("li",class_="mh-scorer")
@@ -139,13 +140,29 @@ def get_match_data(base,extension):
 		for away_scorer in away_scorers:
 			id = away_scorer.find("span").find("div")["data-player-id"]
 			away_scorer_ids.append(id)
-			debug_print(id)
+			#debug_print(id)
 		
-		debug_print(stadium + " " + venue + " " +  given_datetime + " " +  day_month_numbers)
-		debug_print(round + " " + status + " " + home_team_id + " " + away_team_id)
-		debug_print(home_score + " " + away_score)
-		debug_print(reason_win + " " + match_id)
-
+		#debug_print(stadium + " " + venue + " " +  given_datetime + " " +  day_month_numbers)
+		#debug_print(round + " " + status + " " + home_team_id + " " + away_team_id)
+		#debug_print(home_score + " " + away_score)
+		#debug_print(reason_win + " " + match_id)
+		match = {"match_id":match_id, "home_team_id": home_team_id, "away_team_id": away_team_id, "home_score":home_score, "away_score": away_score}
+		match["stadium"] = stadium
+		match["venue"] = venue
+		match["round"] = round
+		match["status"] = status 
+		if reason_win != "" and reason_win != " ":
+			match["reason_win"] = reason_win
+		#Currently the date is formatted as monthmonth/dayday/yearyearyearyear
+		match["date"] = str(day_month_numbers[2:4]) + "/" + str(day_month_numbers[0:2]) + "/" + str(cup_year)
+		
+		debug_print("MATCH")
+		debug_print(pretty_print_dict(match))
+		debug_print("HOME SCORERS")
+		debug_print(home_scorer_ids)
+		debug_print("AWAY SCORERS")
+		debug_print(away_scorer_ids)
+		
 	report = soup.find("div", class_="match-report")
 	get_report_innards(report)
 
@@ -169,11 +186,16 @@ def get_report_innards(report):
 		away_lineup = []
 		lineups = report.find_all("div",class_="lineup")
 		for player in lineups:
-			home_lineup.append(player.find("td",class_="home"))
-			away_lineup.append(player.find("td",class_="away"))
+			home_id = player.find("td",class_="home").find("div")["data-player-id"]
+			away_id = player.find("td",class_="away").find("div")["data-player-id"]
+			home_lineup.append(home_id)
+			away_lineup.append(away_id)
 			#debug_print(player.prettify())
 			
-	debug_print(pretty_print_dict(officials))		
+		debug_print("MATCH REPORT")
+		debug_print(home_lineup)
+		debug_print(away_lineup)
+		debug_print(pretty_print_dict(officials))		
 	return officials
 
 #Main section, do this:
@@ -187,7 +209,7 @@ base = "http://www.fifa.com"
 
 #get_cup_match_links(base,"/worldcup/archive/uruguay1930/matches/index.html")
 #get_match_data(base,"/worldcup/matches/round=201/match=1093/index.html#")
-get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html")
+get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html","1930")
 
 #Debug subset
 #country_names = {'Brazil'}
