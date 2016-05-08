@@ -9,6 +9,11 @@ debug = True
 
 log = None
 
+def write_log(statement):
+	global log
+	log.write(str(statement))
+	log.write('\n')
+
 def openDB():
 	"Open a database connection and log file"
 	global log
@@ -37,29 +42,29 @@ def safe_execute(db, sql):
 			db.commit()
 			return cursor.fetchall()
 		except pymysql.DataError as e:
-			log.write("Data Error " + str(e))
+			write_log("Data Error " + str(e))
 			db.rollback()
 		except pymysql.ProgrammingError as e:
-			log.write("Programming Error" + str(e))
+			write_log("Programming Error" + str(e))
 			db.rollback()
 		except pymysql.OperationalError as e:
-			log.write("Operational Error" + str(e))
+			write_log("Operational Error" + str(e))
 			db.rollback()
 		except pymysql.IntegrityError as e:
-			log.write("Integrity Error" + str(e))
+			write_log("Integrity Error" + str(e))
 			db.rollback()
 		except pymysql.InternalError as e:
-			log.write("Internal Error" + str(e))
+			write_log("Internal Error" + str(e))
 			db.rollback()
 		except pymysql.NotSupportedError as e:
-			log.write("Not Supported Error" + str(e))
+			write_log("Not Supported Error" + str(e))
 			db.rollback()
 		except pymysql.InterfaceError as e:
-			log.write("Interface Error" + str(e))
+			write_log("Interface Error" + str(e))
 			db.rollback()
 		except:
 			# Rollback in case there is any error	
-			log.write("A mysterious error occurred")
+			write_log("A mysterious error occurred")
 			db.rollback()
 
 def insert_cup(db, name, year):	
@@ -67,15 +72,15 @@ def insert_cup(db, name, year):
 	global log
 	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 	sql = "INSERT INTO Cup (CupYear,CupName) VALUES (" + year + ",'" + name + "');"
-	log.write(sql)
+	write_log(sql)
 	safe_execute(db, sql)
 	
 def retrieve_cups(db):
 	"Get all the information from table Cup"
 	sql = "SELECT * FROM Cup;"
-	log.write(sql)
+	write_log(sql)
 	results = safe_execute(db,sql)
-	log.write(str(results))
+	write_log(results)
 	
 def drop_existing_tables(db):
 	"Drop certain tables if they already exist"

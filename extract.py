@@ -119,7 +119,7 @@ def get_cups(base,extension):
 
 	
 def start_load():
-	return load.open()
+	return load.openDB()
 	
 def load_cups(db, cups):
 	for cup in cups:
