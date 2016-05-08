@@ -8,7 +8,7 @@ debug = True
 
 def open():
 	# Open database connection
-	db = pymysql.connect(host="localhost",user="user",password="password",db="MondialDB",cursorclass=pymysql.cursors.DictCursor)
+	db = pymysql.connect(host="100.15.105.119",user="user",password="password",db="MondialDB",cursorclass=pymysql.cursors.DictCursor)
 	#cursor = db.cursor()
 	return db
 
@@ -32,7 +32,7 @@ def insert_cup(db, name,year):
 	cursor = db.cursor()
 	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 	#sql = "INSERT INTO CUP (CupYear,CupName) VALUES (" + year + "," + name + ");"
-	print("TEST TEST TES")
+	print("TEST TEST TEST")
 	#safe_execute(cursor, sql)
 	
 	

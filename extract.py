@@ -121,11 +121,11 @@ def get_cups(base,extension):
 def start_load():
 	return load.open()
 	
-def load_cups(cursor, cups):
+def load_cups(db, cups):
 	for cup in cups:
 		name = cups[cup]["name"]
 		year = cups[cup]["year"]
-		load.insert_cup(cursor,name,year)
+		load.insert_cup(db,name,year)
 		
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"
@@ -280,6 +280,8 @@ base = "http://www.fifa.com"
 
 links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
 debug_print(pretty_print_dict(cups))
+load_cups(start_load(),cups)
+
 #get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
 
 #Debug subset
