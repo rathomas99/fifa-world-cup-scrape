@@ -123,9 +123,10 @@ def start_load():
 	
 def load_cups(db, cups):
 	for cup in cups:
-		name = cups[cup]["name"]
+		name = cup
 		year = cups[cup]["year"]
 		load.insert_cup(db,name,year)
+	load.retrieve_cups(db)
 		
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"

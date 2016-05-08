@@ -8,7 +8,7 @@ debug = True
 
 def open():
 	# Open database connection
-	db = pymysql.connect(host="100.15.105.119",user="user",password="password",db="MondialDB",cursorclass=pymysql.cursors.DictCursor)
+	db = pymysql.connect(host="100.15.105.119",user="adder",password="cmsc424",db="MondialDB")
 	#cursor = db.cursor()
 	return db
 
@@ -17,24 +17,29 @@ def close(db):
 	db.close()
 
 def safe_execute(db, sql):
-	cursor = db.cursor()
-	try:
-		# Execute the SQL command													 
-		cursor.execute(sql)
-		# Commit changes in the database
-		db.commit()
-	except:
-		# Rollback in case there is any error											
-		db.rollback()
+	with db.cursor() as cursor:
+		try:
+			# Execute the SQL command													 
+			cursor.execute(sql)
+			# Commit changes in the database
+			db.commit()
+			return cursor.fetchone()
+		except:
+			# Rollback in case there is any error											
+			db.rollback()
 
 def insert_cup(db, name,year):		
 	"Insert one world cup edition"
-	cursor = db.cursor()
 	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
-	#sql = "INSERT INTO CUP (CupYear,CupName) VALUES (" + year + "," + name + ");"
-	print("TEST TEST TEST")
-	#safe_execute(cursor, sql)
+	sql = "INSERT INTO CUP (CupYear,CupName) VALUES (" + year + "," + name + ");"
+	print(sql)
+	safe_execute(db, sql)
 	
+def retrieve_cups(db):
+	sql = "SELECT * FROM CUP"
+	print(sql)
+	results = safe_execute(db,sql)
+	print(results)
 	
 def drop_existing_tables(db):
 	"Drop certain tables if they already exist"
