@@ -31,6 +31,21 @@ def safe_execute(db, sql):
 		except pymysql.ProgrammingError as e:
 			print("Programming Error" + str(e))
 			db.rollback()
+		except pymysql.OperationalError as e:
+			print("Operational Error" + str(e))
+			db.rollback()
+		except pymysql.IntegrityError as e:
+			print("Integrity Error" + str(e))
+			db.rollback()
+		except pymysql.InternalError as e:
+			print("Internal Error" + str(e))
+			db.rollback()
+		except pymysql.NotSupportedError as e:
+			print("Not Supported Error" + str(e))
+			db.rollback()
+		except pymysql.InterfaceError as e:
+			print("Interface Error" + str(e))
+			db.rollback()
 		except:
 			# Rollback in case there is any error	
 			print("SOMETHING HAPPENED")
