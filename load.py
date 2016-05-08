@@ -16,7 +16,6 @@ def write_log(statement):
 
 def openDB():
 	"Open a database connection and log file"
-	global log
 	# Open database connection
 	db = pymysql.connect(host="100.15.105.119",user="adder",password="cmsc424",db="MondialDB")
 	timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -26,14 +25,12 @@ def openDB():
 
 def close(db):
 	"Close the database connection and the log file"
-	global log
 	#Disconnect from server
 	db.close()
 	log.close()
 
 def safe_execute(db, sql):
 	"Safely execute an SQL command"
-	global log
 	with db.cursor() as cursor:
 		try:
 			# Execute the SQL command													 
@@ -69,7 +66,6 @@ def safe_execute(db, sql):
 
 def insert_cup(db, name, year):	
 	"Insert one world cup edition"
-	global log
 	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 	sql = "INSERT INTO Cup (CupYear,CupName) VALUES (" + year + ",'" + name + "');"
 	write_log(sql)
