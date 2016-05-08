@@ -16,6 +16,7 @@ def write_log(statement):
 
 def openDB():
 	"Open a database connection and log file"
+	global log
 	# Open database connection
 	db = pymysql.connect(host="100.15.105.119",user="adder",password="cmsc424",db="MondialDB")
 	timestr = time.strftime("%Y%m%d-%H%M%S")
