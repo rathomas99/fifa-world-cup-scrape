@@ -167,6 +167,7 @@ def get_match_data(base,extension,cup_year):
 	get_report_innards(report)
 
 def get_report_innards(report):
+	#TODO GET ATTENDANCE
 	if report != None:
 		#Find referees table
 		officials_html = report.find("div",class_="match-official")
@@ -184,13 +185,20 @@ def get_report_innards(report):
 		
 		home_lineup = []
 		away_lineup = []
-		lineups = report.find_all("div",class_="lineup")
-		for player in lineups:
-			home_id = player.find("td",class_="home").find("div")["data-player-id"]
-			away_id = player.find("td",class_="away").find("div")["data-player-id"]
+		lineup = report.find("div",class_="lineup").find("table",class_="table fielded")
+		#debug_print(lineup.prettify())
+		subs = report.find("div",class_="lineup").find("table",class_="table substitutes")
+		
+		home_rows = lineup.find_all("td",class_="home")
+		for row in home_rows:
+			home_id = row.find("div")["data-player-id"]
 			home_lineup.append(home_id)
+	
+		away_rows = lineup.find_all("td",class_="away")
+		for row in away_rows:
+			away_id = row.find("div")["data-player-id"]
 			away_lineup.append(away_id)
-			#debug_print(player.prettify())
+			
 			
 		debug_print("MATCH REPORT")
 		debug_print(home_lineup)
