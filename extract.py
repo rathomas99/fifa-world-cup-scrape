@@ -75,10 +75,23 @@ def get_all_teams_data(base, teams_dict):
 	for team in teams_dict:
 		get_team_data(base,teams_dict[team])
 
+		
+def get_all_match_data(base, extension):
+	debug_print("Get cups")
+	list_of_link_to_cup_matches = get_cups(base, extension)
+	debug_print("Go through cups")
+	for link in list_of_link_to_cup_matches:
+		debug_print(link)
+		matches = get_cup_match_links(base,link)
+		debug_print("done getting matches")
+		for match in matches:
+			debug_print(match)
+			get_match_data(base, match)
+			debug_print("done getting match data")
+			
 def get_cups(base,extension):
-	"Find the links of all the world cup editions"
-	#http://www.fifa.com/fifa-tournaments/archive/worldcup/index.html
-	#Request page
+	"Find the links to the matches page of each world cup edition"
+	#Request page - http://www.fifa.com/fifa-tournaments/archive/worldcup/index.html
 	page = requests.get(base + extension)
 	#Parse html
 	soup = BeautifulSoup(page.content, 'html.parser')
@@ -89,13 +102,19 @@ def get_cups(base,extension):
 	for result in results:
 		#debug_print(result.prettify())
 		link = result.find("a")['href']
+		#Example answer:
+		#http://www.fifa.com/worldcup/archive/brazil2014/index.html
+		#Desired answer:
+		#http://www.fifa.com/worldcup/archive/brazil2014/matches/index.html
+		link = link.replace("index.html","matches/index.html")
 		links.append(link)
 	debug_print(links)
 	return links		
 		
 def get_cup_match_links(base, extension):
-	"For the given world cup, get link to match webpage"
-	#Request page
+	"For the given world cup, get link to match webpages"
+	#Request page 
+	#Example page - "http://www.fifa.com/worldcup/archive/uruguay1930/matches/index.html"
 	page = requests.get(base + extension)
 	#Parse html
 	soup = BeautifulSoup(page.content, 'html.parser')
@@ -104,15 +123,16 @@ def get_cup_match_links(base, extension):
 	links = []
 	#For every resulting div, find the link
 	for result in results:
-		debug_print(result.prettify())
+		#debug_print(result.prettify())
 		link = result.find("a")['href']
 		links.append(link)
 	debug_print(links)
 	return links
 
-def get_match_data(base,extension,cup_year):
+def get_match_data(base,extension):
 	"For the given match, get data"
-	#Request page
+	#Request page 
+	#Example page- "http://www.fifa.com/worldcup/matches/round=201/match=1093/report.html"
 	page = requests.get(base + extension)
 	#Parse html
 	soup = BeautifulSoup(page.content, 'html.parser')
@@ -171,9 +191,9 @@ def get_match_data(base,extension,cup_year):
 		match["status"] = status 
 		if reason_win != "" and reason_win != " ":
 			match["reason_win"] = reason_win
-		#Currently the date is formatted as monthmonth/dayday/yearyearyearyear
-		match["date"] = str(day_month_numbers[2:4]) + "/" + str(day_month_numbers[0:2]) + "/" + str(cup_year)
-		
+		#Currently the date is formatted as monthmonth/dayday
+		match["date"] = str(day_month_numbers[2:4]) + "/" + str(day_month_numbers[0:2])
+		#TODO GET YOUR OWN DAMN YEAR
 		debug_print("MATCH")
 		debug_print(pretty_print_dict(match))
 		debug_print("HOME SCORERS")
@@ -186,12 +206,13 @@ def get_match_data(base,extension,cup_year):
 
 def get_report_innards(report):
 	#TODO GET ATTENDANCE
+	#TODO GET YEAR
+	#Set up dictionary to be used for officials
+	officials = {}
 	if report != None:
 		#Find referees table
 		officials_html = report.find("div",class_="match-official")
 		officials_row_data = officials_html.find_all("td")
-		#Set up dictionary to be used for officials
-		officials = {}
 		for official in officials_row_data:
 			kind_of_referee = official.find("div",class_="people-kind-name").get_text()
 			name_of_referee = official.find("div",class_="people-name").get_text()
@@ -241,7 +262,8 @@ base = "http://www.fifa.com"
 #get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html","1930")
 
 
-cup_links = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
+#cup_links = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
+get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
 
 #Debug subset
 #country_names = {'Brazil'}
