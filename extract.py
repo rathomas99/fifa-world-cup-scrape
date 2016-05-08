@@ -78,7 +78,7 @@ def get_all_teams_data(base, teams_dict):
 		
 def get_all_match_data(base, extension):
 	debug_print("Get cups")
-	list_of_link_to_cup_matches = get_cups(base, extension)
+	list_of_link_to_cup_matches,cups = get_cups(base, extension)
 	debug_print("Go through cups")
 	for link in list_of_link_to_cup_matches:
 		debug_print(link)
@@ -97,19 +97,24 @@ def get_cups(base,extension):
 	soup = BeautifulSoup(page.content, 'html.parser')
 	#Find li's that match "comp-item"
 	results = soup.find_all("li",class_="comp-item")
+	cups = {}
 	links = []
 	#For every resulting div, find the link
 	for result in results:
 		#debug_print(result.prettify())
+		name = result.find("div", class_="comp-name").get_text().strip()
+		#Example name: Brazil 2014
+		year = str(name)[-4:]#last 4 characters of name is the year
 		link = result.find("a")['href']
-		#Example answer:
+		#Example link:
 		#http://www.fifa.com/worldcup/archive/brazil2014/index.html
 		#Desired answer:
 		#http://www.fifa.com/worldcup/archive/brazil2014/matches/index.html
 		link = link.replace("index.html","matches/index.html")
 		links.append(link)
+		cups[name] = {"link":link, "year":year}
 	debug_print(links)
-	return links		
+	return links,cups		
 		
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"
@@ -262,8 +267,9 @@ base = "http://www.fifa.com"
 #get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html","1930")
 
 
-#cup_links = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
-get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
+links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
+debug_print(pretty_print_dict(cups))
+#get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
 
 #Debug subset
 #country_names = {'Brazil'}
