@@ -133,6 +133,35 @@ def get_cups(base,extension):
 	debug_print(links)
 	return links,cups		
 
+def get_team_membership(base, cup, team_dictionary):
+	"Find what teams are participating in a cup"
+	link = cup["link"]
+	#link should be of the form http://www.fifa.com/worldcup/archive/brazil2014/matches/index.html
+	#change it to http://www.fifa.com/worldcup/archive/brazil2014/teams/index.html
+	link = link.replace("matches","teams")
+	
+	cup_year = cup["year"]
+	
+	page = requests.get(base + link)
+	#Parse html
+	soup = BeautifulSoup(page.content, 'html.parser')
+	
+	cup_team_links_html = soup.find_all("a",class_="team")
+	for link_html in cup_team_links_html:
+		#Example link: http://www.fifa.com/worldcup/archive/brazil2014/teams/team=43976/index.html
+		link = link_html["href"]
+		name = link_html.find(class_='team-name').get_text()
+		team_id = (link.split("teams/team=")[1]).split("/index.html")[0]
+		
+		#debug_print(link)
+		#debug_print(team_id)
+		#debug_print(name)
+		#debug_print(cup_year)		
+		
+		if name in team_dictionary:
+			team_dictionary[name]["team_id"] = team_id		
+			team_dictionary[name].setdefault("participations", []).append(cup_year)
+			
 	
 def start_load():
 	global db
@@ -314,7 +343,7 @@ def main():
 	start_load()
 	#get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
 	
-	#links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
+	links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
 	#debug_print(pretty_print_dict(cups))
 	#load_cups(start_load(),cups)
 	#get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html")
@@ -324,7 +353,11 @@ def main():
 	country_names = {'Brazil'}
 	test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
 	get_all_teams_data(base, test_dict)
+	
+	for cup in cups:
+		get_team_membership(base, cups[cup], test_dict)
 	pretty_print_dict(test_dict)
+	
 	
 #Main section, do this:
 main()
