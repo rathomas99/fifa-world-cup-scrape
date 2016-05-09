@@ -176,7 +176,20 @@ def load_cups(cups):
 		load.insert_cup(db,name,year)
 	if debug:
 		load.retrieve_cups(db)
-		
+	
+def load_teams(team_dictionary):
+	global db
+	for team in team_dictionary:
+		if 'team_id' in team_dictionary[team]:
+			team_id = team_dictionary[team]["team_id"]
+			name = team
+			flag = team_dictionary[team]["flag"]
+			load.insert_team(db,team_id,name,flag)
+			debug_print("===============")
+			debug_print(name)
+			debug_print(team_id)
+			debug_print(flag)
+	
 def load_match(match_data):
 	global db
 	match_id = match_data["match_id"]
@@ -358,6 +371,7 @@ def main():
 		get_team_membership(base, cups[cup], test_dict)
 	#get_team_membership(base,cups["2014"],test_dict)
 	pretty_print_dict(test_dict)
+	load_teams(test_dict)
 	
 	
 #Main section, do this:
