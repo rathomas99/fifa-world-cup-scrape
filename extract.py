@@ -129,8 +129,8 @@ def get_cups(base,extension):
 		#http://www.fifa.com/worldcup/archive/brazil2014/matches/index.html
 		link = link.replace("index.html","matches/index.html")
 		links.append(link)
-		cups[name] = {"link":link, "year":year}
-	debug_print(links)
+		cups[year] = {"link":link, "name":name, "year":year}
+	#debug_print(links)
 	return links,cups		
 
 def get_team_membership(base, cup, team_dictionary):
@@ -356,6 +356,7 @@ def main():
 	
 	for cup in cups:
 		get_team_membership(base, cups[cup], test_dict)
+	#get_team_membership(base,cups["2014"],test_dict)
 	pretty_print_dict(test_dict)
 	
 	
