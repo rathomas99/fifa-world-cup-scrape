@@ -350,7 +350,7 @@ def main():
 	
 	team_dictionary = get_teams(base + '/fifa-tournaments/teams/search.html')
 	#debug_print(pretty_print_dict(team_dictionary))
-	country_names = {'Brazil'}
+	country_names = {'Brazil','Qatar','USA', 'Japan'}
 	test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
 	get_all_teams_data(base, test_dict)
 	
