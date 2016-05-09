@@ -109,14 +109,14 @@ def create_player_table(db):
 	safe_execute(db, sql)
 	
 def create_game_table(db):
-	sql = """CREATE TABLE Game (
+	sql = """CREATE TABLE Game(
 	MatchID int(11),
 	CupYear YEAR(4),
 	TeamID1 int(11),
 	TeamID2 int(11),
 	PRIMARY KEY (MatchID),
-	FOREIGN KEY (TeamID1) REFERENCES Team(TeamID),
-	FOREIGN KEY (TeamID2) REFERENCES Team(TeamID),
-	FOREIGN KEY (CupYear) REFERENCES Cup(CupYear)
+	CONSTRAINT fk_game_CupYear FOREIGN KEY (TeamID1) REFERENCES Team(TeamID),
+	CONSTRAINT fk_game_TeamID1 FOREIGN KEY (TeamID2) REFERENCES Team(TeamID),
+	CONSTRAINT fk_game_TeamID2 FOREIGN KEY (CupYear) REFERENCES Cup(CupYear)
 	);"""
 	safe_execute(sql)
