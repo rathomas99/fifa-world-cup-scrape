@@ -4,7 +4,7 @@ import pprint
 from bs4 import BeautifulSoup
 import load
 
-debug = False
+debug = True
 db = None
 
 def log(my_string):
@@ -67,6 +67,9 @@ def get_team_data(base, team):
 	for stat_name_html,value_html in zip(stats_names,team_stats):
 		stat_name = stat_name_html.get_text()
 		value = value_html.get_text()
+		#Get rid of the trademark symbol
+		if '\u2122' in value:
+			value = value.replace('\u2122',"")
 		debug_print(stat_name)
 		debug_print(value)
 		if stat_name != " ":
@@ -220,7 +223,8 @@ def get_match_data(base,extension):
 		match["date"] = str(day_month_numbers[2:4]) + "/" + str(day_month_numbers[0:2])
 		#TODO GET YOUR OWN DAMN YEAR
 		debug_print("MATCH")
-		debug_print(pretty_print_dict(match))
+		if debug:
+			pretty_print_dict(match)
 		debug_print("HOME SCORERS")
 		debug_print(home_scorer_ids)
 		debug_print("AWAY SCORERS")
@@ -292,22 +296,26 @@ def get_report_innards(report):
 		debug_print("MATCH REPORT")
 		debug_print(home_lineup)
 		debug_print(away_lineup)
-		debug_print(pretty_print_dict(officials))		
+		if debug:
+			pretty_print_dict(officials)		
 	return officials
 
 	
 def main():
 	base = "http://www.fifa.com"
 	start_load()
-	get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
+	#get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
 	
 	#links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
 	#debug_print(pretty_print_dict(cups))
 	#load_cups(start_load(),cups)
 	#get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html")
 	
-	#team_dictionary = get_teams(base + '/fifa-tournaments/teams/search.html')
+	team_dictionary = get_teams(base + '/fifa-tournaments/teams/search.html')
 	#debug_print(pretty_print_dict(team_dictionary))
+	country_names = {'Brazil'}
+	test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
+	get_all_teams_data(base, test_dict)
 	
 #Main section, do this:
 main()
