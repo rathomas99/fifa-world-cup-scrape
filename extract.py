@@ -4,7 +4,7 @@ import pprint
 from bs4 import BeautifulSoup
 import load
 
-debug = True
+debug = False
 db = None
 
 def log(my_string):
@@ -91,6 +91,7 @@ def get_all_match_data(base, extension):
 		for match in matches:
 			debug_print(match)
 			match_data = get_match_data(base, match)
+			load_match(match_data)
 			debug_print("done getting match data")
 			
 def get_cups(base,extension):
@@ -138,11 +139,11 @@ def load_cups(cups):
 		
 def load_match(match_data):
 	global db
-	match_id = match["match_id"]
-	#cup_year
-	home_team = match["home_team_id"]
-	away_team = match["away_team_id"]
-	
+	match_id = match_data["match_id"]
+	cup_year = match_data["cup_year"]
+	home_team = match_data["home_team_id"]
+	away_team = match_data["away_team_id"]
+	load.insert_match(db,match_id,cup_year,home_team,away_team)
 	
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"

@@ -11,6 +11,7 @@ log = None
 
 def write_log(statement):
 	global log
+	#print(statement)
 	log.write(str(statement))
 	log.write('\n')
 
@@ -79,6 +80,14 @@ def retrieve_cups(db):
 	results = safe_execute(db,sql)
 	write_log(results)
 	
+def insert_match(db,match_id,cup_year,home_team,away_team):
+	"Insert one match"
+	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
+	sql = "INSERT INTO Game (MatchID, CupYear,TeamID1,TeamID2) VALUES ("
+	sql = sql + match_id + "," + cup_year + "," + home_team + "," + away_team + ");"
+	write_log(sql)
+	results = safe_execute(db,sql)
+	
 def drop_existing_tables(db):
 	"Drop certain tables if they already exist"
 	safe_execute(db,"DROP TABLE IF EXISTS CUP")
@@ -98,3 +107,16 @@ def create_player_table(db):
 	PRIMARY KEY (PID)
 	"""
 	safe_execute(db, sql)
+	
+def create_game_table(db):
+	sql = """CREATE TABLE Game (
+	MatchID int(11),
+	CupYear YEAR(4),
+	TeamID1 int(11),
+	TeamID2 int(11),
+	PRIMARY KEY (MatchID),
+	FOREIGN KEY (TeamID1) REFERENCES Team(TeamID),
+	FOREIGN KEY (TeamID2) REFERENCES Team(TeamID),
+	FOREIGN KEY (CupYear) REFERENCES Cup(CupYear)
+	);"""
+	safe_execute(sql)
