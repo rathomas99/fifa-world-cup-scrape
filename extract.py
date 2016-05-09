@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import load
 
 debug = True
+db = None
 
 def log(my_string):
 	"Ensure that errors are propagated to the user"
@@ -35,17 +36,19 @@ def get_teams(website):
 	#For each team, look at its html and extract information
 	for html in all_teams_html:
 		#Acquire the name of the country from its html
-		possible_names = html.find_all(class_='team-name')
-		if possible_names != []:
-			#Use the first name
-			country_name = possible_names[0].get_text()
+		#Use the first name
+		name = html.find(class_='team-name')
+		if name != None:
+			country_name = name.get_text()
 		else:
 			#No names were found
 			country_name = "INVALIDCOUNTRY"
 			log("WARNING: In finding teams, we could not establish a team name. The html is as follows: " + html.prettify())
-
+		flag = html.find("img", class_="flag")
+		if flag != None:
+			flag = flag["src"]
 		#Add the team's webpage to the team dictionary under link
-		team_dictionary[country_name]= {'link' : (html['href'])}
+		team_dictionary[country_name]= {'link' : (html['href']), 'flag' : flag}
 	#Return the team dictionary	
 	return team_dictionary
 
@@ -76,10 +79,10 @@ def get_all_teams_data(base, teams_dict):
 	for team in teams_dict:
 		get_team_data(base,teams_dict[team])
 
-		
 def get_all_match_data(base, extension):
 	debug_print("Get cups")
 	list_of_link_to_cup_matches,cups = get_cups(base, extension)
+	load_cups(cups)
 	debug_print("Go through cups")
 	for link in list_of_link_to_cup_matches:
 		debug_print(link)
@@ -87,7 +90,7 @@ def get_all_match_data(base, extension):
 		debug_print("done getting matches")
 		for match in matches:
 			debug_print(match)
-			get_match_data(base, match)
+			match_data = get_match_data(base, match)
 			debug_print("done getting match data")
 			
 def get_cups(base,extension):
@@ -120,15 +123,27 @@ def get_cups(base,extension):
 
 	
 def start_load():
-	return load.openDB()
+	global db
+	db = load.openDB()
+	return db
 	
-def load_cups(db, cups):
+def load_cups(cups):
+	global db
 	for cup in cups:
 		name = cup
 		year = cups[cup]["year"]
 		load.insert_cup(db,name,year)
-	load.retrieve_cups(db)
+	if debug:
+		load.retrieve_cups(db)
 		
+def load_match(match_data):
+	global db
+	match_id = match["match_id"]
+	#cup_year
+	home_team = match["home_team_id"]
+	away_team = match["away_team_id"]
+	
+	
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"
 	#Request page 
@@ -154,11 +169,18 @@ def get_match_data(base,extension):
 	page = requests.get(base + extension)
 	#Parse html
 	soup = BeautifulSoup(page.content, 'html.parser')
+	
+	#Set up match dictionary
+	match = {}
+	#Find the cup year
+	cup_year = soup.find("title").get_text()
+	cup_year = cup_year[:4]
+	
+	#debug_print(cup_year)
+	
 	#Find first div that match "mh result"
 	result = soup.find("div",class_="mh result")
-	
 	#Find the match information
-	match = {}
 	if result != None:
 		#debug_print(result.prettify())
 		#match id
@@ -189,6 +211,8 @@ def get_match_data(base,extension):
 		match["venue"] = venue
 		match["round"] = round
 		match["status"] = status 
+		match["cup_year"] = cup_year
+		
 		if reason_win != "" and reason_win != " ":
 			match["reason_win"] = reason_win
 		#Currently the date is formatted as monthmonth/dayday
@@ -203,6 +227,7 @@ def get_match_data(base,extension):
 		
 	report = soup.find("div", class_="match-report")
 	get_report_innards(report)
+	return match
 
 	
 def get_scorers(result):
@@ -272,12 +297,17 @@ def get_report_innards(report):
 	
 def main():
 	base = "http://www.fifa.com"
+	start_load()
+	get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
+	
 	#links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
 	#debug_print(pretty_print_dict(cups))
 	#load_cups(start_load(),cups)
-	#get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
-	get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html")
-
+	#get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html")
+	
+	#team_dictionary = get_teams(base + '/fifa-tournaments/teams/search.html')
+	#debug_print(pretty_print_dict(team_dictionary))
+	
 #Main section, do this:
 main()
 
