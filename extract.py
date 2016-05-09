@@ -50,6 +50,8 @@ def get_teams(website):
 		#Add the team's webpage to the team dictionary under link
 		team_dictionary[country_name]= {'link' : (html['href']), 'flag' : flag}
 	#Return the team dictionary	
+	#if debug:
+		#pretty_print_dict(team_dictionary)
 	return team_dictionary
 
 def get_team_data(base, team):
@@ -70,11 +72,17 @@ def get_team_data(base, team):
 		#Get rid of the trademark symbol
 		if '\u2122' in value:
 			value = value.replace('\u2122',"")
-		debug_print(stat_name)
-		debug_print(value)
+		#debug_print(stat_name)
+		#debug_print(value)
 		if stat_name != " ":
 			#add value to the list of values at team[stat_name]
 			team.setdefault(stat_name, []).append(value)
+	#Let's assume we only want the first piece of data for each category
+	for thing in team:
+		if thing != "flag" and thing  != "link":
+			team[thing] = team[thing][0]
+	if debug:
+		pretty_print_dict(team)
 	debug_print("-------------")
 
 def get_all_teams_data(base, teams_dict):
@@ -316,6 +324,7 @@ def main():
 	country_names = {'Brazil'}
 	test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
 	get_all_teams_data(base, test_dict)
+	pretty_print_dict(test_dict)
 	
 #Main section, do this:
 main()
