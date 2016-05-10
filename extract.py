@@ -102,8 +102,9 @@ def get_all_match_data(base, extension):
 		for match in matches:
 			debug_print(match)
 			match_data = get_match_data(base, match)
-			load_match(match_data)
 			debug_print("done getting match data")
+			load_match(match_data)
+			load_goals(match_data)
 	return cups
 			
 def get_cups(base,extension):
@@ -223,6 +224,19 @@ def load_match(match_data):
 		month = match_data["month"]
 		day = match_data["day"]
 		load.insert_match(db,match_id,cup_year,home_team,away_team,home_score,away_score,venue,stadium,month,day)
+	
+def load_goals(match):
+	global db
+	if "match_id" in match:
+		match_id = match["match_id"]
+		if "goals" in match:
+			goals = match["goals"]
+			for time in goals:
+				goal = goals[time]
+				type = goal["type"]
+				player_id = goal["player_id"]
+				team_id = goal["team_id"]
+				load.insert_goal(db,time,player_id,match_id,type,team_id)
 	
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"
