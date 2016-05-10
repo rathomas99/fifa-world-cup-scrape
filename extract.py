@@ -90,22 +90,19 @@ def get_all_teams_data(base, teams_dict):
 	for team in teams_dict:
 		get_team_data(base,teams_dict[team])
 
-def get_all_match_data(base, extension):
-	debug_print("Get cups")
-	list_of_link_to_cup_matches,cups = get_cups(base, extension)
-	load_cups(cups)
+def get_all_match_data(base, list_of_link_to_cup_matches):
 	debug_print("Go through cups")
+	super_match_data = []
 	for link in list_of_link_to_cup_matches:
 		debug_print(link)
 		matches = get_cup_match_links(base,link)
-		debug_print("done getting matches")
+		debug_print("done getting match links")
 		for match in matches:
 			debug_print(match)
 			match_data = get_match_data(base, match)
-			debug_print("done getting match data")
-			load_match(match_data)
-			load_goals(match_data)
-	return cups
+			super_match_data.append(match_data)
+			debug_print("done getting match data")	
+	return super_match_data
 			
 def get_cups(base,extension):
 	"Find the links to the matches page of each world cup edition"
@@ -166,7 +163,6 @@ def get_cup_membership(base, cup, team_dictionary):
 			team_dictionary[name]["members"] = {}
 			get_team_membership(base, cup_year, team_id, link, team_dictionary[name]["members"])
 			
-
 def  get_team_membership(base, cup_year, team_id, link, members_dictionary):
 	"For the given cup and team webpage, find team members who participated"
 	#Example link: http://www.fifa.com/worldcup/archive/uruguay1930/teams/team=43924/players.html
@@ -203,8 +199,7 @@ def  get_team_membership(base, cup_year, team_id, link, members_dictionary):
 		#debug_print(player_id)
 		#if debug:
 			#pretty_print_dict(player_dict)
-	
-	
+		
 def start_load():
 	global db
 	db = load.openDB()
@@ -266,24 +261,25 @@ def load_team_membership(team_dictionary):
 					birthdate = player_dict["player_birthdate"]
 					load.insert_player(db,player_id,player_name,birthdate)
 					load.insert_team_membership(db,cup_year,team_id,player_id)
-					
-				
-				
+									
 def load_match(match_data):
 	global db
 	if "match_id" in match_data:
-		match_id = match_data["match_id"]
-		cup_year = match_data["cup_year"]
-		home_team = match_data["home_team_id"]
-		away_team = match_data["away_team_id"]
-		home_score = match_data["home_score"]
-		away_score = match_data["away_score"]
-		stadium = match_data["stadium"] 
-		venue =	match_data["venue"]
-		round =	match_data["round"]
-		month = match_data["month"]
-		day = match_data["day"]
-		load.insert_match(db,match_id,cup_year,home_team,away_team,home_score,away_score,venue,stadium,month,day)
+		try:
+			match_id = match_data["match_id"]
+			cup_year = match_data["cup_year"]
+			home_team = match_data["home_team_id"]
+			away_team = match_data["away_team_id"]
+			home_score = match_data["home_score"]
+			away_score = match_data["away_score"]
+			stadium = match_data["stadium"] 
+			venue =	match_data["venue"]
+			round =	match_data["round"]
+			month = match_data["month"]
+			day = match_data["day"]
+			load.insert_match(db,match_id,cup_year,home_team,away_team,home_score,away_score,venue,stadium,month,day)
+		except KeyError as e:
+			log("ERROR: A match_data dictionary did not have a necessary field to load into the database.")
 	
 def load_goals(match):
 	global db
@@ -293,10 +289,13 @@ def load_goals(match):
 			goals = match["goals"]
 			for time in goals:
 				goal = goals[time]
-				type = goal["type"]
-				player_id = goal["player_id"]
-				team_id = goal["team_id"]
-				load.insert_goal(db,time,player_id,match_id,type,team_id)
+				try:
+					type = goal["type"]
+					player_id = goal["player_id"]
+					team_id = goal["team_id"]
+					load.insert_goal(db,time,player_id,match_id,type,team_id)
+				except KeyError as e:
+					log("ERROR: A goal did not have a necessary field to load into the database.")
 	
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"
@@ -344,14 +343,26 @@ def get_match_data(base,extension):
 		venue = result.find("span",class_="mh-i-venue").get_text()
 		#time
 		given_datetime = result.find("div",class_="mh-i-datetime").get_text()
-		day_month_numbers = result.find("div",class_="s-score s-date-HHmm")["data-daymonthutc"]
+		day_month_numbers = result.find("div",class_="s-score s-date-HHmm")
+		month = None
+		day = None
+		if "data-daymonthutc" in day_month_numbers:
+			day_month_numbers = day_month_numbers["data-daymonthutc"]
+			#day_month_numbers is daydaymonthmonth
+			month = str(day_month_numbers[2:4]) 
+			day = str(day_month_numbers[0:2])
+			
 		#Round = Groups/Semifinals/Finals
 		round = result.find("div",class_="mh-i-round").get_text()
 		#Status = Full-time
 		status = result.find("div",class_="s-status").get_text()
 		#Home and away team ids
-		home_team_id = result.find("div",class_="t home")["data-team-id"]
-		away_team_id = result.find("div",class_="t away")["data-team-id"]
+		home_team_id = result.find("div",class_="t home")
+		if "data-team-id" in home_team_id:
+			home_team_id = home_team_id["data-team-id"]
+		away_team_id = result.find("div",class_="t away")
+		if "data-team-id" in away_team_id:
+			away_team_id = away_team_id["data-team-id"]
 		#Home and away scores
 		score = result.find("span",class_="s-scoreText").get_text()
 		home_score, away_score = score.split("-")
@@ -360,7 +371,9 @@ def get_match_data(base,extension):
 		
 		goals = get_scorers(result,home_team_id,away_team_id)
 		
-		match = {"match_id":match_id, "home_team_id": home_team_id, "away_team_id": away_team_id, "home_score":home_score, "away_score": away_score}
+		match = {"match_id":match_id, "home_team_id": home_team_id, "away_team_id": away_team_id}
+		match["home_score"] = home_score
+		match["away_score"] = away_score
 		match["stadium"] = stadium
 		match["venue"] = venue
 		match["round"] = round
@@ -369,23 +382,25 @@ def get_match_data(base,extension):
 		
 		if reason_win != "" and reason_win != " ":
 			match["reason_win"] = reason_win
-		
-		#day_month_numbers is daydaymonthmonth
-		match["month"] = str(day_month_numbers[2:4]) 
-		match["day"] = str(day_month_numbers[0:2])
+		if month != None:
+			match["month"] = month
+		if day != None:
+			match["day"] = day
 		
 		#Put in scorers
 		match["goals"] = goals
 		
-		debug_print("MATCH")
-		if debug:
-			pretty_print_dict(match)
-		debug_print("GOALS")
-		if debug:
-			pretty_print_dict(goals)
+		#debug_print("MATCH")
+		#if debug:
+		#	pretty_print_dict(match)
+		#debug_print("GOALS")
+		#if debug:
+			#pretty_print_dict(goals)
 		
-	report = soup.find("div", class_="match-report")
-	get_report_innards(report)
+	#report = soup.find("div", class_="match-report")
+	#get_report_innards(report)
+	#TODO USE REPORT STUFF!
+	
 	return match
 	
 def get_scorers(result,home_team_id,away_team_id):
@@ -416,7 +431,7 @@ def for_loop_scorers(goals, specified_team_id,specified_scorers):
 				goal_text = goal_html.find("span").get_text()
 				debug_print(goal_text)
 				#Only use the first two characters of the text
-				minutes_since_start = goal_text[0:2]
+				minutes_since_start = goal_text.split("'")[0]
 				goals[minutes_since_start] = {}
 				goals[minutes_since_start]["player_id"] = player_id
 				goals[minutes_since_start]["team_id"] = specified_team_id
@@ -474,34 +489,57 @@ def main():
 	base = "http://www.fifa.com"
 	start_load()
 	
-	#cups = get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
-	links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
-	#load_cups(cups)
-	#debug_print(pretty_print_dict(cups))
+	debug_print("Get cups----------------------------------------")
+	list_of_link_to_cup_matches,cups = get_cups(base, "/fifa-tournaments/archive/worldcup/index.html")
 	
-	#-------------------
+	debug_print("Load cups----------------------------------------")
+	load_cups(cups)
 	
+	debug_print("Get team links----------------------------------------")
 	team_dictionary = get_teams(base + '/fifa-tournaments/teams/search.html')
-	#debug_print(pretty_print_dict(team_dictionary))
+	
+	#Test crap
 	country_names = {'Brazil'}#,'Qatar','USA', 'Japan'}
 	test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
 	
+	debug_print("Get data for each team----------------------------------------")
 	get_all_teams_data(base, test_dict)
+	
+	#More test crap
 	pretty_print_dict(test_dict)
 	test_cup_years = ['1930']#['2014','1930','1950']
+	test_links = ["/worldcup/archive/brazil2014/matches/index.html"]
 	
-	for cup in test_cup_years:
-		get_cup_membership(base, cups[cup], team_dictionary)
-	load_team_cup_memberships(test_dict)
-	load_team_membership(test_dict)
+	debug_print("Get match data----------------------------------------")
+	#super_match_data = get_all_match_data(base, list_of_link_to_cup_matches)
+	super_match_data = get_all_match_data(base, test_links)
+	debug_print("Load match data----------------------------------------")
+	for match_data in super_match_data:
+		load_match(match_data)
+	
+	debug_print("Get cup membership----------------------------------------")
+	#for cup in test_cup_years:
+	#	get_cup_membership(base, cups[cup], team_dictionary)
+		
+	debug_print("Load teams----------------------------------------")
+	#load_teams(test_dict)
+	debug_print("Load cup memberships----------------------------------------")
+	#load_team_cup_memberships(test_dict)
+	debug_print("Load players and team memberships----------------------------------------")
+	#load_team_membership(test_dict)
 	
 	pretty_print_dict(test_dict['Brazil']['members']['1930'])
+	
+	debug_print("Load goals----------------------------------------")
+	#for match_data in super_match_data:
+	#	load_goals(match_data)
 
 	#get_cup_membership(base,cups["2014"],test_dict)
 	#pretty_print_dict(team_dictionary)
 	#load_teams(team_dictionary)
 	#get_match_data(base,"/worldcup/matches/round=201/match=1093/report.html")
-	
+	#links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
+	#load_cups(cups)
 	
 #Main section, do this:
 main()
@@ -532,7 +570,7 @@ main()
 #TODONE: General stats per team
 #		Appearances, Matches Played, Goals Scored, and Average Goals
 
-#TODO: Get list of editions 
+#TODONE: Get list of editions 
 #http://www.fifa.com/fifa-tournaments/archive/worldcup/index.html
 
 #TODO: Specific edition stats per team
@@ -546,5 +584,3 @@ main()
 #TODONE: Matches per edition
 #http://www.fifa.com/worldcup/archive/uruguay1930/matches/index.html
 #Group Number, Date, Time, Venue, Stadium, WinningTeamName, LosingTeamName, WinningTeamScore, LosingTeamScore
-
-#TODO: Players????? oh dear
