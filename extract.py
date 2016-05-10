@@ -210,11 +210,19 @@ def load_team_cup_memberships(team_dictionary):
 				
 def load_match(match_data):
 	global db
-	match_id = match_data["match_id"]
-	cup_year = match_data["cup_year"]
-	home_team = match_data["home_team_id"]
-	away_team = match_data["away_team_id"]
-	load.insert_match(db,match_id,cup_year,home_team,away_team)
+	if "match_id" in match_data:
+		match_id = match_data["match_id"]
+		cup_year = match_data["cup_year"]
+		home_team = match_data["home_team_id"]
+		away_team = match_data["away_team_id"]
+		home_score = match_data["home_score"]
+		away_score = match_data["away_score"]
+		stadium = match_data["stadium"] 
+		venue =	match_data["venue"]
+		round =	match_data["round"]
+		month = match_data["month"]
+		day = match_data["day"]
+		load.insert_match(db,match_id,cup_year,home_team,away_team,home_score,away_score,venue,stadium,month,day)
 	
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"
@@ -276,7 +284,7 @@ def get_match_data(base,extension):
 		#Reason of win
 		reason_win = result.find("span",class_="text-reasonwin").get_text()
 		
-		home_scorer_ids, away_scorer_ids = get_scorers(result)
+		home_scorer_ids, away_scorer_ids = get_scorers(result,home_team_id,away_team_id)
 		
 		match = {"match_id":match_id, "home_team_id": home_team_id, "away_team_id": away_team_id, "home_score":home_score, "away_score": away_score}
 		match["stadium"] = stadium
@@ -287,9 +295,15 @@ def get_match_data(base,extension):
 		
 		if reason_win != "" and reason_win != " ":
 			match["reason_win"] = reason_win
-		#Currently the date is formatted as monthmonth/dayday
-		match["date"] = str(day_month_numbers[2:4]) + "/" + str(day_month_numbers[0:2])
-		#TODO GET YOUR OWN DAMN YEAR
+		
+		#day_month_numbers is daydaymonthmonth
+		match["month"] = str(day_month_numbers[2:4]) 
+		match["day"] = str(day_month_numbers[0:2])
+		
+		#Put in scorers
+		match["home_scorers"] = home_scorer_ids
+		match["away_scorers"] = away_scorer_ids
+		
 		debug_print("MATCH")
 		if debug:
 			pretty_print_dict(match)
@@ -302,11 +316,12 @@ def get_match_data(base,extension):
 	get_report_innards(report)
 	return match
 	
-def get_scorers(result):
+def get_scorers(result,home_team_id,away_team_id):
 	"For a match, find players who scored goals"
 	#TODO Find type of goal
 	#TODO Find time of goal
 	#TODO Find number of goals
+	goals = {}
 	if result != None:
 		#Find player ids of the players that scored for the home team
 		home_scorers_html = result.find("div",class_="t-scorer home")
@@ -314,8 +329,17 @@ def get_scorers(result):
 		home_scorer_ids = []
 		for home_scorer in home_scorers:
 			id = home_scorer.find("span").find("div")["data-player-id"]
+			goals_html = home_scorer.find_all("span", class_="ml-scorer-evmin")
+			for goal_html in goals_html:
+				minute = goal_html.find("span").get_text()
+				debug_print(minute)
+				if "PEN" in minute:
+					debug_print("penalty goal")
+				else if "OG" in minute:
+					debug_print("own goal")
 			home_scorer_ids.append(id)
 			#debug_print(id)
+			
 		#Find player ids of the players that scored for the away team
 		away_scorers_html = result.find("div",class_="t-scorer away")
 		away_scorers = away_scorers_html.find_all("li",class_="mh-scorer")
@@ -371,21 +395,23 @@ def main():
 	base = "http://www.fifa.com"
 	start_load()
 	
-	#get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
-	links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
-	load_cups(cups)
+	cups = get_all_match_data(base,"/fifa-tournaments/archive/worldcup/index.html")
+	#links, cups = get_cups(base,"/fifa-tournaments/archive/worldcup/index.html")
+	#load_cups(cups)
 	#debug_print(pretty_print_dict(cups))
-
-	team_dictionary = get_teams(base + '/fifa-tournaments/teams/search.html')
-	#debug_print(pretty_print_dict(team_dictionary))
-	country_names = {'Brazil','Qatar','USA', 'Japan'}
-	test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
 	
-	get_all_teams_data(base, test_dict)
-	pretty_print_dict(test_dict)
-	for cup in cups:
-		get_team_membership(base, cups[cup], team_dictionary)
-	load_team_cup_memberships(test_dict)
+	#-------------------
+	
+	#team_dictionary = get_teams(base + '/fifa-tournaments/teams/search.html')
+	#debug_print(pretty_print_dict(team_dictionary))
+	#country_names = {'Brazil','Qatar','USA', 'Japan'}
+	#test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
+	
+	#get_all_teams_data(base, test_dict)
+	#pretty_print_dict(test_dict)
+	#for cup in cups:
+	#	get_team_membership(base, cups[cup], team_dictionary)
+	#load_team_cup_memberships(test_dict)
 	
 
 	#get_team_membership(base,cups["2014"],test_dict)

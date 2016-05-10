@@ -81,11 +81,13 @@ def retrieve_cups(db):
 	results = safe_execute(db,sql)
 	write_log(results)
 	
-def insert_match(db,match_id,cup_year,home_team,away_team):
+def insert_match(db,match_id,cup_year,home_team,away_team,home_score,away_score,venue,stadium,month,day):
 	"Insert one match"
 	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
-	sql = "INSERT INTO `Match` (MatchID, CupYear,TeamID1,TeamID2) VALUES ("
-	sql = sql + match_id + "," + cup_year + "," + home_team + "," + away_team + ");"
+	sql = "INSERT INTO `Game` (GameID, CupYear,TeamID1,TeamID2,Team1Score,Team2Score,Venue,Stadium,Month,Day) VALUES ("
+	sql = sql + match_id + "," + cup_year + "," + home_team + "," + away_team + ","
+	sql = sql + home_score + "," + away_score + "," + "'" + venue + "'" + "," + "'" + stadium + "'" + ","
+	sql = sql + month + "," + day + ");"
 	write_log(sql)
 	results = safe_execute(db,sql)
 	
