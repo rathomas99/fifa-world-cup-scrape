@@ -181,7 +181,7 @@ def  get_team_membership(base, cup_year, team_id, link, members_dictionary):
 	soup = BeautifulSoup(page.content, 'html.parser')
 	
 	members_dictionary[cup_year] = []
-	debug_print("Acquiring team members for cup " + cup_year)
+	debug_print("Acquiring team members for cup " + cup_year + " and team " + team_id)
 	player_list_html = soup.find("div", class_="p-list clearfix")
 	#debug_print(player_list_html.prettify())
 	player_list = player_list_html.find_all("div", class_="p p-i-no")
@@ -198,7 +198,7 @@ def  get_team_membership(base, cup_year, team_id, link, members_dictionary):
 			player_birthdate_YYYY_MM_DD = player_birthdate["data-birthdate"]
 			player_birthdate_english = player_birthdate.get_text()
 		
-		player_dict = {"player_id" : player_id, "player_name" : player_name, "player_link" : player_link, "player_position" : player_position}
+		player_dict = {"player_id" : player_id, "player_name" : player_name, "player_link" : player_link, "player_position" : player_position, "player_birthdate" : player_birthdate_YYYY_MM_DD}
 		members_dictionary[cup_year].append(player_dict)
 		#debug_print(player_id)
 		#if debug:
@@ -234,7 +234,7 @@ def load_teams(team_dictionary):
 			
 def load_team_cup_memberships(team_dictionary):
 	global db
-	debug_print("HEREHEHREHRKEJRKLEJR")
+	debug_print("Loading cup membership for teams")
 	for team in team_dictionary:
 		debug_print("======------======")
 		pretty_print_dict(team_dictionary[team])
@@ -248,6 +248,26 @@ def load_team_cup_memberships(team_dictionary):
 				#TODO GET RANK
 				debug_print(cup_year)
 				load.insert_team_cup_membership(db,str(team_id),str(cup_year),str(rank))
+
+def load_team_membership(team_dictionary):
+	global db
+	debug_print("Loading team membership for players")
+	for team in team_dictionary:
+		debug_print("-----======-----")
+		if 'team_id' in team_dictionary[team] and "members" in team_dictionary[team]:
+			team_id = team_dictionary[team]["team_id"]
+			years = team_dictionary[team]["members"]
+			for cup_year in years:
+				debug_print("Cup year" + cup_year + " team " + team)
+				player_list = years[cup_year]
+				for player_dict in player_list:
+					player_id = player_dict["player_id"]
+					player_name = player_dict["player_name"]
+					birthdate = player_dict["player_birthdate"]
+					load.insert_player(db,player_id,player_name,birthdate)
+					load.insert_team_membership(db,cup_year,team_id,player_id)
+					
+				
 				
 def load_match(match_data):
 	global db
@@ -473,6 +493,7 @@ def main():
 	for cup in test_cup_years:
 		get_cup_membership(base, cups[cup], team_dictionary)
 	load_team_cup_memberships(test_dict)
+	load_team_membership(test_dict)
 	
 	pretty_print_dict(test_dict['Brazil']['members']['1930'])
 

@@ -12,7 +12,7 @@ log = None
 def write_log(statement):
 	global log
 	statement = str(statement)
-	print(statement)
+	#print(statement)
 	log.write(statement)
 	log.write('\n')
 
@@ -105,6 +105,31 @@ def insert_team_cup_membership(db,team_id,cup_year,rank):
 	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 	sql = "INSERT INTO `CupMember` (TeamID, CupYear,Rank) VALUES ("
 	sql = sql + team_id + ',' + cup_year + ',' + rank + ');'
+	write_log(sql)
+	results = safe_execute(db,sql)
+	
+def insert_goal(db,time,player_id,match_id,type,team_id):
+	"Insert one goal for the given team and match and player"
+	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
+	sql = "INSERT INTO `Goal` (Time, PlayerID,GameID,Type,TeamID) VALUES ("
+	sql = sql + time + ',' + player_id + ',' + match_id + ",'" + type + "',"
+	sql = sql + team_id + ');'
+	write_log(sql)
+	results = safe_execute(db,sql)
+
+def insert_player(db,player_id,player_name,birthdate):
+	"Insert player"
+	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
+	sql = "INSERT INTO `Player` (PlayerID,Name,birthday) VALUES ("
+	sql = sql + player_id + ",'" + player_name +"'," + birthdate + ');'
+	write_log(sql)
+	results = safe_execute(db,sql)
+	
+def insert_team_membership(db,cup_year,team_id,player_id):
+	"Insert team membership"
+	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
+	sql = "INSERT INTO `TeamMember` (Year,TeamID,PlayerID) VALUES ("
+	sql = sql + cup_year + "," + team_id +"," + player_id + ');'
 	write_log(sql)
 	results = safe_execute(db,sql)
 	
