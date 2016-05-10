@@ -11,7 +11,8 @@ log = None
 
 def write_log(statement):
 	global log
-	#print(statement)
+	statement = str(statement)
+	print(statement)
 	log.write(statement)
 	log.write('\n')
 
@@ -85,6 +86,23 @@ def insert_match(db,match_id,cup_year,home_team,away_team):
 	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 	sql = "INSERT INTO `Match` (MatchID, CupYear,TeamID1,TeamID2) VALUES ("
 	sql = sql + match_id + "," + cup_year + "," + home_team + "," + away_team + ");"
+	write_log(sql)
+	results = safe_execute(db,sql)
+	
+def insert_team(db,team_id,name,flag):
+	"Insert one team"
+	#Use double quotes around country name because Côte d'Ivoire
+	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
+	sql = "INSERT INTO `Team` (TeamID, Name,Flag) VALUES ("
+	sql = sql + team_id + ',"' + name + '","' + flag + '");'
+	write_log(sql)
+	results = safe_execute(db,sql)
+
+def insert_team_cup_membership(db,team_id,cup_year,rank):
+	"Insert one cup membership for the given team"
+	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
+	sql = "INSERT INTO `CupMember` (TeamID, CupYear,Rank) VALUES ("
+	sql = sql + team_id + ',' + cup_year + ',' + rank + ');'
 	write_log(sql)
 	results = safe_execute(db,sql)
 	
