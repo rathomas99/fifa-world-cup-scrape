@@ -284,7 +284,7 @@ def get_match_data(base,extension):
 		#Reason of win
 		reason_win = result.find("span",class_="text-reasonwin").get_text()
 		
-		home_scorer_ids, away_scorer_ids = get_scorers(result,home_team_id,away_team_id)
+		goals = get_scorers(result,home_team_id,away_team_id)
 		
 		match = {"match_id":match_id, "home_team_id": home_team_id, "away_team_id": away_team_id, "home_score":home_score, "away_score": away_score}
 		match["stadium"] = stadium
@@ -301,16 +301,14 @@ def get_match_data(base,extension):
 		match["day"] = str(day_month_numbers[0:2])
 		
 		#Put in scorers
-		match["home_scorers"] = home_scorer_ids
-		match["away_scorers"] = away_scorer_ids
+		match["goals"] = goals
 		
 		debug_print("MATCH")
 		if debug:
 			pretty_print_dict(match)
-		debug_print("HOME SCORERS")
-		debug_print(home_scorer_ids)
-		debug_print("AWAY SCORERS")
-		debug_print(away_scorer_ids)
+		debug_print("GOALS")
+		if debug:
+			pretty_print_dict(goals)
 		
 	report = soup.find("div", class_="match-report")
 	get_report_innards(report)
@@ -326,29 +324,37 @@ def get_scorers(result,home_team_id,away_team_id):
 		#Find player ids of the players that scored for the home team
 		home_scorers_html = result.find("div",class_="t-scorer home")
 		home_scorers = home_scorers_html.find_all("li",class_="mh-scorer")
-		home_scorer_ids = []
-		for home_scorer in home_scorers:
-			id = home_scorer.find("span").find("div")["data-player-id"]
-			goals_html = home_scorer.find_all("span", class_="ml-scorer-evmin")
-			for goal_html in goals_html:
-				minute = goal_html.find("span").get_text()
-				debug_print(minute)
-				if "PEN" in minute:
-					debug_print("penalty goal")
-				else if "OG" in minute:
-					debug_print("own goal")
-			home_scorer_ids.append(id)
-			#debug_print(id)
+		goals = for_loop_scorers(goals,home_team_id,home_scorers)
 			
 		#Find player ids of the players that scored for the away team
 		away_scorers_html = result.find("div",class_="t-scorer away")
 		away_scorers = away_scorers_html.find_all("li",class_="mh-scorer")
-		away_scorer_ids = []
-		for away_scorer in away_scorers:
-			id = away_scorer.find("span").find("div")["data-player-id"]
-			away_scorer_ids.append(id)
-			#debug_print(id)
-		return home_scorer_ids, away_scorer_ids
+		goals = for_loop_scorers(goals,away_team_id,away_scorers)
+		
+		return goals
+	
+def for_loop_scorers(goals, specified_team_id,specified_scorers):
+	"For a player, find goals and their type"
+	for scorer in specified_scorers:
+			player_id = scorer.find("span").find("div")["data-player-id"]
+			goals_html = scorer.find_all("span", class_="ml-scorer-evmin")
+			for goal_html in goals_html:
+				goal_text = goal_html.find("span").get_text()
+				debug_print(goal_text)
+				#Only use the first two characters of the text
+				minutes_since_start = goal_text[0:2]
+				goals[minutes_since_start] = {}
+				goals[minutes_since_start]["player_id"] = player_id
+				goals[minutes_since_start]["team_id"] = specified_team_id
+				if "PEN" in goal_text:
+					debug_print("penalty goal")
+					goals[minutes_since_start]["type"] = "Penalty"
+				elif "OG" in goal_text:
+					debug_print("own goal")
+					goals[minutes_since_start]["type"] = "Self"
+				else:
+					goals[minutes_since_start]["type"] = "Regular"
+	return goals
 	
 def get_report_innards(report):
 	#TODO GET ATTENDANCE
