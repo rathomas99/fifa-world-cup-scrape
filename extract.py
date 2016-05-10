@@ -14,12 +14,20 @@ def log(my_string):
 def debug_print(my_string):
 	"When debugging, print this out"
 	if debug:
-		print(my_string)
+		try:
+			print(my_string)
+		except UnicodeEncodeError as e:
+			log("ERROR: FUCK UNICODE")
+			log(str(e))
 
 def pretty_print_dict(my_dict):
 	"Pretty print the dictionary"
-	pp = pprint.PrettyPrinter(depth=3)
-	pp.pprint(my_dict)
+	try:
+		pp = pprint.PrettyPrinter(depth=3)
+		pp.pprint(my_dict)
+	except UnicodeEncodeError as e:
+		log("ERROR: FUCK UNICODE")
+		log(str(e))
 
 def get_teams(website):
 	"Get the links of the teams"
@@ -96,12 +104,12 @@ def get_all_match_data(base, list_of_link_to_cup_matches):
 	for link in list_of_link_to_cup_matches:
 		debug_print(link)
 		matches = get_cup_match_links(base,link)
-		debug_print("done getting match links")
+		debug_print("For a cup, acquired links for matches")
 		for match in matches:
 			debug_print(match)
 			match_data = get_match_data(base, match)
 			super_match_data.append(match_data)
-			debug_print("done getting match data")	
+			#debug_print("done getting match data")	
 	return super_match_data
 			
 def get_cups(base,extension):
@@ -180,25 +188,29 @@ def  get_team_membership(base, cup_year, team_id, link, members_dictionary):
 	debug_print("Acquiring team members for cup " + cup_year + " and team " + team_id)
 	player_list_html = soup.find("div", class_="p-list clearfix")
 	#debug_print(player_list_html.prettify())
-	player_list = player_list_html.find_all("div", class_="p p-i-no")
+	player_list = player_list_html.find_all("div",recursive=False)
 	for player in player_list:
-		#debug_print("-=-=--=-=-=-=-=-=-=-=-=-=-=-")
-		player_id = player["data-player-id"]
-		player_name = player["data-player-name"]
-		player_link = player.find("a")
-		if player_link != None:
-			player_link = player_link["href"]
-		player_position = player.find("span", class_="p-i-fieldpos").get_text()
-		player_birthdate = player.find("span", class_="data")
-		if player_birthdate:
-			player_birthdate_YYYY_MM_DD = player_birthdate["data-birthdate"]
-			player_birthdate_english = player_birthdate.get_text()
+		debug_print("-=-=--=-=-=-=-=-=-=-=-=-=-=-")
+		try:
+			player_id = player["data-player-id"]
+			player_name = player["data-player-name"]
+			player_link = player.find("a")
+			if player_link:
+				player_link = player_link["href"]
+			
+			player_position = player.find("span", class_="p-i-fieldpos").get_text()
+			player_birthdate = player.find("span", class_="data")
+			if player_birthdate:
+				player_birthdate_YYYY_MM_DD = player_birthdate["data-birthdate"]
+				player_birthdate_english = player_birthdate.get_text()
 		
-		player_dict = {"player_id" : player_id, "player_name" : player_name, "player_link" : player_link, "player_position" : player_position, "player_birthdate" : player_birthdate_YYYY_MM_DD}
-		members_dictionary[cup_year].append(player_dict)
-		#debug_print(player_id)
-		#if debug:
-			#pretty_print_dict(player_dict)
+			player_dict = {"player_id" : player_id, "player_name" : player_name, "player_link" : player_link, "player_position" : player_position, "player_birthdate" : player_birthdate_YYYY_MM_DD}
+			members_dictionary[cup_year].append(player_dict)
+			debug_print(player_id)
+			if debug:
+				pretty_print_dict(player_dict)
+		except KeyError as e:
+			log("ERROR: A team member in html problem " + str(e))
 		
 def start_load():
 	global db
@@ -253,14 +265,18 @@ def load_team_membership(team_dictionary):
 			team_id = team_dictionary[team]["team_id"]
 			years = team_dictionary[team]["members"]
 			for cup_year in years:
-				debug_print("Cup year" + cup_year + " team " + team)
+				debug_print("Cup year " + cup_year + " team " + team)
 				player_list = years[cup_year]
+				debug_print(player_list)
 				for player_dict in player_list:
 					player_id = player_dict["player_id"]
 					player_name = player_dict["player_name"]
 					birthdate = player_dict["player_birthdate"]
-					load.insert_player(db,player_id,player_name,birthdate)
-					load.insert_team_membership(db,cup_year,team_id,player_id)
+					if player_dict["player_position"] != "Coach":
+						load.insert_player(db,player_id,player_name,birthdate)
+						load.insert_team_membership(db,cup_year,team_id,player_id)
+					else:
+						log("WARNING: I'm not adding coaches to the players table.")
 									
 def load_match(match_data):
 	global db
@@ -279,7 +295,8 @@ def load_match(match_data):
 			day = match_data["day"]
 			load.insert_match(db,match_id,cup_year,home_team,away_team,home_score,away_score,venue,stadium,month,day)
 		except KeyError as e:
-			log("ERROR: A match_data dictionary did not have a necessary field to load into the database.")
+			log("ERROR: A match_data dictionary did not have the necessary field "+ str(e) + " to load into the database.")
+			#log(pretty_print_dict(match_data))
 	
 def load_goals(match):
 	global db
@@ -293,9 +310,10 @@ def load_goals(match):
 					type = goal["type"]
 					player_id = goal["player_id"]
 					team_id = goal["team_id"]
-					load.insert_goal(db,time,player_id,match_id,type,team_id)
+					load.insert_goal(db,str(time),str(player_id),str(match_id),str(type),str(team_id))
 				except KeyError as e:
 					log("ERROR: A goal did not have a necessary field to load into the database.")
+					log(pretty_print_dict(goal))
 	
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"
@@ -346,23 +364,26 @@ def get_match_data(base,extension):
 		day_month_numbers = result.find("div",class_="s-score s-date-HHmm")
 		month = None
 		day = None
-		if "data-daymonthutc" in day_month_numbers:
+		try:
 			day_month_numbers = day_month_numbers["data-daymonthutc"]
 			#day_month_numbers is daydaymonthmonth
 			month = str(day_month_numbers[2:4]) 
 			day = str(day_month_numbers[0:2])
+		except KeyError as e:
+			log("ERROR: There is no time(" + str(e) + ") listed in the match website.")
 			
 		#Round = Groups/Semifinals/Finals
 		round = result.find("div",class_="mh-i-round").get_text()
 		#Status = Full-time
 		status = result.find("div",class_="s-status").get_text()
 		#Home and away team ids
-		home_team_id = result.find("div",class_="t home")
-		if "data-team-id" in home_team_id:
-			home_team_id = home_team_id["data-team-id"]
-		away_team_id = result.find("div",class_="t away")
-		if "data-team-id" in away_team_id:
-			away_team_id = away_team_id["data-team-id"]
+		try:
+			home_team_id = result.find("div",class_="t home")["data-team-id"]	
+			away_team_id = result.find("div",class_="t away")["data-team-id"]
+		except KeyError as e:
+			log("ERROR: Finding match data, but couldn't get the home or away team's id")
+			log(str(e))
+			
 		#Home and away scores
 		score = result.find("span",class_="s-scoreText").get_text()
 		home_score, away_score = score.split("-")
@@ -390,9 +411,9 @@ def get_match_data(base,extension):
 		#Put in scorers
 		match["goals"] = goals
 		
-		#debug_print("MATCH")
-		#if debug:
-		#	pretty_print_dict(match)
+		debug_print("MATCH")
+		if debug:
+			pretty_print_dict(match)
 		#debug_print("GOALS")
 		#if debug:
 			#pretty_print_dict(goals)
@@ -429,17 +450,17 @@ def for_loop_scorers(goals, specified_team_id,specified_scorers):
 			goals_html = scorer.find_all("span", class_="ml-scorer-evmin")
 			for goal_html in goals_html:
 				goal_text = goal_html.find("span").get_text()
-				debug_print(goal_text)
+				#debug_print(goal_text)
 				#Only use the first two characters of the text
 				minutes_since_start = goal_text.split("'")[0]
 				goals[minutes_since_start] = {}
 				goals[minutes_since_start]["player_id"] = player_id
 				goals[minutes_since_start]["team_id"] = specified_team_id
 				if "PEN" in goal_text:
-					debug_print("penalty goal")
+					#debug_print("penalty goal")
 					goals[minutes_since_start]["type"] = "Penalty"
 				elif "OG" in goal_text:
-					debug_print("own goal")
+					#debug_print("own goal")
 					goals[minutes_since_start]["type"] = "Self"
 				else:
 					goals[minutes_since_start]["type"] = "Regular"
@@ -507,7 +528,7 @@ def main():
 	
 	#More test crap
 	pretty_print_dict(test_dict)
-	test_cup_years = ['1930']#['2014','1930','1950']
+	test_cup_years = ['2014']#['2014','1930','1950']
 	test_links = ["/worldcup/archive/brazil2014/matches/index.html"]
 	
 	debug_print("Get match data----------------------------------------")
@@ -518,21 +539,21 @@ def main():
 		load_match(match_data)
 	
 	debug_print("Get cup membership----------------------------------------")
-	#for cup in test_cup_years:
-	#	get_cup_membership(base, cups[cup], team_dictionary)
+	for cup in test_cup_years:
+		get_cup_membership(base, cups[cup], team_dictionary)
 		
 	debug_print("Load teams----------------------------------------")
-	#load_teams(test_dict)
+	load_teams(test_dict)
 	debug_print("Load cup memberships----------------------------------------")
-	#load_team_cup_memberships(test_dict)
+	load_team_cup_memberships(test_dict)
 	debug_print("Load players and team memberships----------------------------------------")
-	#load_team_membership(test_dict)
+	load_team_membership(test_dict)
 	
-	pretty_print_dict(test_dict['Brazil']['members']['1930'])
+	pretty_print_dict(test_dict['Brazil']['members'])
 	
 	debug_print("Load goals----------------------------------------")
-	#for match_data in super_match_data:
-	#	load_goals(match_data)
+	for match_data in super_match_data:
+		load_goals(match_data)
 
 	#get_cup_membership(base,cups["2014"],test_dict)
 	#pretty_print_dict(team_dictionary)

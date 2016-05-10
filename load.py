@@ -112,8 +112,8 @@ def insert_goal(db,time,player_id,match_id,type,team_id):
 	"Insert one goal for the given team and match and player"
 	#INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 	sql = "INSERT INTO `Goal` (Time, PlayerID,GameID,Type,TeamID) VALUES ("
-	sql = sql + time + ',' + player_id + ',' + match_id + ",'" + type + "',"
-	sql = sql + team_id + ');'
+	sql = sql + str(time) + ',' + str(player_id) + ',' + str(match_id) + ",'" + str(type) + "',"
+	sql = sql + str(team_id) + ');'
 	write_log(sql)
 	results = safe_execute(db,sql)
 
