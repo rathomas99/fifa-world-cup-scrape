@@ -21,7 +21,14 @@ This document is an introduction to the MondialDB project. It will provide detai
 The purpose of the project is to create a database that can access various details about the World Cup. It will contain soccer team names and members and statistics such as player records, team records, penalty information, and the rank obtained. Another major part of this project is creating a tool to extract information about the World Cup from the Internet. It will be able to extract information from various websites and put them into a database readable format. The tool will be able to deal with data from European and American websites and transform it into a standard format. This project will allow for easy and readable queries.
 
 \subsection{Purpose of Phase 1}
-In this phase of the project we are to design the database and receive feedback on it. We will attempt to catch any significant errors in design at this stage and prevent a broken or severely flawed implementation from going through. If design errors are caught early it will require considerably less work to fix them. 
+In this phase of the project we must design the database and receive feedback on it. We will attempt to catch any significant errors in design at this stage and prevent a broken or severely flawed implementation from going through. If design errors are caught early it will require considerably less work to fix them. 
+
+\subsection{Purpose of Phase 2}
+In this phase of the project we must create the graphical schema, relational schema, and pseudo code for the project.
+
+\subsection{Purpose of Phase 3}
+In this phase of the project we must create a user manual on how to use the 
+completed database system.
 
 \section{Problems and Solutions}
 The following list is composed of problems we encountered with the conceptual design of the project.
@@ -47,6 +54,22 @@ The following list is composed of problems we encountered with the conceptual de
   Problem: We don't live close together. 
     
   Solution: Use text messages, phone calls, and email to communicate. Use Google documents to share data.
+  S
+  
+  \item
+  Problem: The websites are in UTF-8, but when I try printing in UTF-8, it fails in certain cases.
+  
+  Solution: Convert it to the latin-1 encoding and then print it.
+  
+  \item
+  Problem: Certain teams don't exist anymore.
+  
+  Solution: Give them their own team id anyway.
+  
+  \item
+  Problem: There are three different types of Goals - Regular goal, Penalty goal, and Own goal.
+  
+  Solution: Add a Type field to goal that's an enum to describe the type of goal.
 \end{itemize}
 
 \section{Assumptions}
@@ -60,6 +83,10 @@ The assumptions we made are the following:
 \item We will not need handicap support for our website.
 \item We will not need a mobile accessible version for our website.
 \item Our users are average people who do not have a computer science background but are able to comfortably use the internet.
+\item Coaches should not be put into the player table.
+\item Different teams have unique names. For example, there aren't two Brazil teams.
+\item A player can score more than one goal in a match.
+\item Teams that haven't qualified for a world cup aren't added to the database.
 \end{itemize}
 
 \part{Phase 1 Documentation}
@@ -336,7 +363,7 @@ This query tells users what referee was calling for a particular match. Many peo
 
 \section{ER Model}
 \begin{figure}[ph]
-	\centering{\includegraphics[width=\textwidth]{ermodel}}
+	\centering{\includegraphics[width=\textwidth]{ermodel2}}
 	\caption {ER Model}
 	\label{ermodel}
 \end{figure}
@@ -416,11 +443,6 @@ See Figure \ref{schematable} on page \pageref{schematable}.
 	\end{tabular}
 \end{figure}
 
-\begin{figure}[ph]
-	\centering{\includegraphics[width=\textwidth]{relschema}}
-	\caption{Relational Schema}
-	\label{relschema}
-\end{figure}
 
 \section{Extract, Transform, and Load Task}
 The basic process is to grab the html of a website, parse it, and then execute a regex on its contents to capture data. 
@@ -430,9 +452,44 @@ be reformatted into a standard format such as YYYY-MM-DD.
 After transformation, the program loads the information into the database.
 
 Throughout extraction, transformation, and loading, the program logs important
-information to files extracting\_logYmd-HMS and loading\_logYmd-HMS
+information to files extracting\_logYmd-HMS and loading\_logYmd-HMS.
+
+All of the ETL code can be found online at \url{https://github.com/rathomas99/fifa-world-cup-scrape}.
 
 \section{Queries}
 The code for the SQL queries will be attached separately.
+
+\part{Phase 3 Documentation}
+\section{User Manual}
+
+\subsection{How to Use the Webpage}
+Go to the IP Address \url{http://100.15.105.119/}. You will see the website.
+On the right hand side are various query types. If you click on the name of the query, a textbox asking for input will show up. Enter in the input that you would like to query on and then click the button "Get Result".
+
+\subsection{How to Use the ETL Tool}
+You must install the prerequisite python libraries first.
+\\
+\texttt{sudo pip install requests}
+\\
+\texttt{sudo pip install pymysql}
+\\
+\texttt{sudo pip install beautifulsoup4}
+\\
+You must set up the MySQL database with the aforementioned schema.
+In \texttt{load.py}, make sure that the function openDB() has the correct 
+host, user, password, and database. 
+After installing the python libraries and setting up the database, run \texttt{python extract.py}. It will scrape the internet for FIFA World Cup data. The extracting python script will call the loading python script by itself. There will be two log files created. One log file will list warnings, errors, and messages from the extracting script. The other log file will list
+warnings, errors, and messages from the loading script. If loading goes perfectly well, the log file will essentially look like an SQL file that inserts all the relevant data.
+
+\section{Limitations}
+\begin{enumerate}
+	\item The scraping doesn't always get the data it needs. 
+	\item If you try to insert a goal before the players and the teams, it won't work. A goal needs to fulfill the foreign key constraints of the player existing and the teams existing.
+	\item Not all players are added.
+	\item Not all teams are added.
+	\item If one step in the process fails, the rest of it fails too.
+	\item It's slow.
+	\item The extraction does not take into account penalty shootouts.
+\end{enumerate}
 
 \end{document}  

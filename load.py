@@ -168,7 +168,7 @@ def insert_player(db,player_id,player_name,birthdate):
 	birthdate = validate_input(birthdate)
 	if player_id and player_name and birthdate:
 		sql = "INSERT INTO `Player` (PlayerID,Name,birthday) VALUES ("
-		sql = sql + player_id + ",'" + player_name +"'," + birthdate + ');'
+		sql = sql + player_id + ",'" + player_name +"','" + birthdate + "');"
 		write_log(sql)
 		results = safe_execute(db,sql)
 	
