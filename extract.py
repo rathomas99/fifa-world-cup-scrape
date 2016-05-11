@@ -412,7 +412,7 @@ def load_uninserted_player(base, player_link):
 		
 		screaming = False
 		title = soup.find("title")
-		if "Fifa.com" == title:
+		if "FIFA.com" in title:
 			log("WARNING: You hit the unfound page page")
 		else:
 			debug_print(title)
