@@ -2,14 +2,26 @@ import requests
 import re
 import pprint
 from bs4 import BeautifulSoup
+import time
+
 import load
+import team_names
 
 debug = True
 db = None
+loglog = None
 
 def log(my_string):
 	"Ensure that errors are propagated to the user"
-	print(my_string)
+	global loglog
+	try:
+		print(my_string)
+		statement = str(my_string)
+		#print(statement)
+		loglog.write(my_string)
+		loglog.write('\n')
+	except UnicodeEncodeError as e:
+		log.write("ERROR: In writing a statement, UNICODE happened. " + str(e))
 
 def debug_print(my_string):
 	"When debugging, print this out"
@@ -46,8 +58,11 @@ def get_teams(website):
 		#Acquire the name of the country from its html
 		#Use the first name
 		name = html.find(class_='team-name')
+		team_id = "-1"
 		if name != None:
 			country_name = name.get_text()
+			team_id = get_team_id_for_country(country_name)
+			debug_print(team_id)
 		else:
 			#No names were found
 			country_name = "INVALIDCOUNTRY"
@@ -56,12 +71,20 @@ def get_teams(website):
 		if flag != None:
 			flag = flag["src"]
 		#Add the team's webpage to the team dictionary under link
-		team_dictionary[country_name]= {'link' : (html['href']), 'flag' : flag}
+		team_dictionary[country_name]= {'link' : (html['href']), 'flag' : flag, 'team_id' : team_id}
 	#Return the team dictionary	
 	#if debug:
 		#pretty_print_dict(team_dictionary)
 	return team_dictionary
 
+def get_team_id_for_country(country_name):
+	try:
+		team_id = team_names.team_country_ids[country_name] 
+		debug_print(country_name + " goes to " + team_id)
+		return team_id
+	except KeyError as e:
+		log("ERROR: The given country name doesn't correspond to an id in the default dictionary of countries: " + str(country_name))
+	
 def get_team_data(base, team):
 	"For the given team, acquire general world cup data"
 	#Find the team's webpage 
@@ -87,7 +110,7 @@ def get_team_data(base, team):
 			team.setdefault(stat_name, []).append(value)
 	#Let's assume we only want the first piece of data for each category
 	for thing in team:
-		if thing != "flag" and thing  != "link":
+		if thing != "flag" and thing  != "link" and thing != "team_id":
 			team[thing] = team[thing][0]
 	if debug:
 		pretty_print_dict(team)
@@ -158,7 +181,8 @@ def get_cup_membership(base, cup, team_dictionary):
 		#Example link: http://www.fifa.com/worldcup/archive/brazil2014/teams/team=43976/index.html
 		link = link_html["href"]
 		name = link_html.find(class_='team-name').get_text()
-		team_id = (link.split("teams/team=")[1]).split("/index.html")[0]
+		#team_id = (link.split("teams/team=")[1]).split("/index.html")[0]
+		team_id = get_team_id_for_country(name)
 		
 		#debug_print(link)
 		#debug_print(team_id)
@@ -507,8 +531,13 @@ def get_report_innards(report):
 	return officials
 
 def main():
+	global loglog
 	base = "http://www.fifa.com"
 	start_load()
+	
+	timestr = time.strftime("%Y%m%d-%H%M%S")
+	loglog = open("extracting_log"+timestr+".txt",'w')
+	
 	
 	debug_print("Get cups----------------------------------------")
 	list_of_link_to_cup_matches,cups = get_cups(base, "/fifa-tournaments/archive/worldcup/index.html")
