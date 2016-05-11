@@ -357,27 +357,28 @@ def load_goals(base,match, inserted_teams,inserted_players):
 					type = goal["type"]
 					player_id = goal["player_id"]
 					team_id = goal["team_id"]
-					if inserted_teams != [] and inserted_players != []:
-						if team_id in inserted_teams and player_id in inserted_teams:
-							load.insert_goal(db,time,player_id,match_id,type,team_id)
-						elif team_id in inserted_teams:
-							#only need to load player then goal
-							load_uninserted_player(base, goal["player_link"])
-							load.insert_goal(db,time,player_id,match_id,type,team_id)
-						elif player_id in inserted_players:
-							#only need to load team then goal
-							load_uninserted_team(base, goal["team_abbr"])
-							load.insert_goal(db,time,player_id,match_id,type,team_id)
+					if type and player_id and team_id:
+						if inserted_teams != [] and inserted_players != []:
+							if team_id in inserted_teams and player_id in inserted_teams:
+								load.insert_goal(db,time,player_id,match_id,type,team_id)
+							elif team_id in inserted_teams:
+								#only need to load player then goal
+								load_uninserted_player(base, goal["player_link"])
+								load.insert_goal(db,time,player_id,match_id,type,team_id)
+							elif player_id in inserted_players:
+								#only need to load team then goal
+								load_uninserted_team(base, goal["team_abbr"])
+								load.insert_goal(db,time,player_id,match_id,type,team_id)
+							else:
+								#both!
+								load_uninserted_player(base, goal["player_link"])
+								load_uninserted_team(goal["team_abbr"])
+								load.insert_goal(db,time,player_id,match_id,type,team_id)
 						else:
-							#both!
+							#assume both!
 							load_uninserted_player(base, goal["player_link"])
 							load_uninserted_team(goal["team_abbr"])
 							load.insert_goal(db,time,player_id,match_id,type,team_id)
-					else:
-						#assume both!
-						load_uninserted_player(base, goal["player_link"])
-						load_uninserted_team(goal["team_abbr"])
-						load.insert_goal(db,time,player_id,match_id,type,team_id)
 				except KeyError as e:
 					log("ERROR: A goal did not have a necessary field to load into the database.")
 					log(pretty_print_dict(goal))
