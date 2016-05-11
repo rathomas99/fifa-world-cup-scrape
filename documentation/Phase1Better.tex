@@ -342,137 +342,97 @@ This query tells users what referee was calling for a particular match. Many peo
 \end{figure}
 
 \section{Relational Schema}
+See Figure \ref{schematable} on page \pageref{schematable}.
+\begin{figure}
+	\caption{Relational Schema}
+	\label{schematable}
+	\begin{tabular}{||l || l | l |}
+		\hline
+		Cup & \textbf{\underline{CupYear}} & CupName \\
+		\hline
+	\end{tabular}
+	\\
+	\\
+	\begin{tabular}{||l || l | l | l |}
+		\hline
+		CupMember & \textbf{\underline{CupYear (FK to Cup)}} & \textbf{\underline{TeamID (FK to Team)}} & Rank\\
+		\hline
+	\end{tabular}
+	\\
+	\\
+	\begin{tabular}{||l || l | l | l |l|}
+		\hline
+		Game & \textbf{\underline{GameID}} & CupYear(FK to Cup) & TeamID1 (FK to Team) & TeamID2 (FK to Team)\\
+		\hline
+		& Team1Score & Team2Score & Venue & Stadium \\
+		\hline
+		& Month & Day & &\\
+		\hline
+	\end{tabular}
+	\\
+	\\
+	\\
+	\begin{tabular}{||l || l | l | l |l|}
+		\hline
+		Goal & \textbf{\underline{Time}} & GameID(FK to Game) & PlayerID (FK to Player) & TeamID (FK to Team)\\
+		\hline
+		& Type & & & \\
+		\hline
+	\end{tabular}
+	\\
+	\\
+	\begin{tabular}{||l || l | l | l |l|}
+		\hline
+		Penalty & \textbf{\underline{Time}} & \textbf{\underline{GameID(FK to Game)}} & \textbf{\underline{PlayerID (FK to Player)}} & Type\\
+		\hline
+	\end{tabular}
+	\\
+	\\
+	\begin{tabular}{||l || l | l |}
+		\hline
+		MatchRefs & \textbf{\underline{RefereeID (FK to Referee)}} & \textbf{\underline{GameID(FK to Game)}} \\
+		\hline
+	\end{tabular}
+	\\
+	\\
+	\begin{tabular}{||l || l | l | l |}
+		\hline
+		Player & \textbf{\underline{PlayerID (FK to Player)}} & Name & birthday \\
+		\hline
+	\end{tabular}
+	\\
+	\\
+	\begin{tabular}{||l || l | l | l |}
+		\hline
+		Team & \textbf{\underline{TeamID}} & Name & Flag \\
+		\hline
+	\end{tabular}
+	\\
+	\\
+	\begin{tabular}{||l || l | l | l |}
+		\hline
+		TeamMember & \textbf{\underline{Year (FK to Cup)}} & \textbf{\underline{TeamID(FK to Team)}} & \textbf{\underline{PlayerID(FK to Player)}} \\
+		\hline
+	\end{tabular}
+\end{figure}
+
 \begin{figure}[ph]
 	\centering{\includegraphics[width=\textwidth]{relschema}}
 	\caption{Relational Schema}
 	\label{relschema}
 \end{figure}
 
-\section{Query for Super Stars}
-\begin{lstlisting}[language=SQL]
---Get super stars
-CREATE VIEW super_stars AS
-SELECT tm1.playerID,cm.CupYear
-FROM CupMember cm, TeamMember tm1, TeamMember tm2.
-WHERE tm1.playerID==tm2.playerID
-AND tm1.year!=tm2.year
-AND cm.TeamID=tm1.teamID
-\end{lstlisting}
+\section{Extract, Transform, and Load Task}
+The basic process is to grab the html of a website, parse it, and then execute a regex on its contents to capture data. 
+After extraction, the program transforms the data into something acceptable.
+In most cases, no transformation is necessary. However, dates always need to
+be reformatted into a standard format such as YYYY-MM-DD.
+After transformation, the program loads the information into the database.
 
-\newpage
+Throughout extraction, transformation, and loading, the program logs important
+information to files extracting\_logYmd-HMS and loading\_logYmd-HMS
 
-\section{Query for a Given Player}
-\begin{lstlisting}[language=SQL]
---Players with said name
-CREATE VIEW player_ids AS
-SELECT p.playerID
-FROM player p
-WHERE p.name=selected_name
-
---Teams those players were on
-CREATE VIEW team_ids AS
-SELECT tm.teamID, pids.playerID
-FROM TeamMember tm,player_ids pids
-WHERE tm.playerID=pids.p
-
---Team Names
-SELECT t.name
-FROM team_ids tids, team t
-WHERE t.teamID=tids.teamID
-
---Cups those players were in
-CREATE VIEW cup_years AS
-SELECT cm.CupYear, tid.PlayerID
-FROM CupMember cm, team_ids tids
-WHERE cm.teamID=            tids.TeamID
-
---Regular Goals
-SELECT g.playerID, count(g.playerID)
-FROM Goal g, player_ids pids
-WHERE g.type=’Regular’ and g.PlayerID==pid.playerId
-GROUP BY g.playerID
-
---Penalty shots
-SELECT g.playerID, count(g.playerID)
-FROM Goal g, player_ids pids
-WHERE g.type=’Penalty’ and g.PlayerID==pid.playerId
-GROUP BY g.playerID
-\end{lstlisting}
-
-\newpage
-
-\section{Query for Team History}
-\begin{lstlisting}[language=SQL]
-SELECT c.name, c.year, t1.name, t2.name
-FROM  cup c. team t2,match m
-WHERE m.cupyear=c.cupyear
-AND m.teamID1=t1.teamID
-AND m.teamID2=t2.teamID
-
-SELECT c.Name,t.name , cm.cupyear, cm.rank
-FROM team t, cupmember cm, cup c
-WHERE t.teamId=cm.teamId
-AND c.cupyear=cm.cupyear
-
-SELECT p.name,m.name,p.time,p.type
-FROM penalty p, match m,player pl
-WHERE m.matchID=p.matchID
-AND p1.playerID=p.playerID
-\end{lstlisting}
-
-\section{Query for a given Cup}
-\begin{lstlisting}[language=SQL]
---Teams
-CREATE VIEW participating_team_ids AS
-SELECT cm.teamID
-FROM CupMember cm
-WHERE cm.CupYear=SelectedYear;
-
---Ranks
-SELECT t.name, cm.rank
-FROM participating_team_ids ids, CupMember cm,Team t
-WHERE ids.teamID==t.TeamID
-AND ids.teamID==cm.teamID
-AND cm.CupYear=selected year
-
---Regular Goals
-SELECT g.matchID, count(g.time)
-FROM Goal g, match m
-WHERE g.type=’Regular’ and g.matchID==m.matchID
-GROUP BY g.matchID
-
---Penalty shots
-SELECT g.matchID, count(g.time)
-FROM Goal g, match m
-WHERE g.type=’Penalty’ and g.matchID==m.matchID
-GROUP BY g.matchID
-\end{lstlisting}
-\newpage
-
-\section{Country's Players Query}
-\begin{lstlisting}[language=SQL]
---list of teams in cups
-CREATE VIEW teams_ids AS
-SELECT cm.teamIds
-FROM CupMember cm
---Matches teams participated in
-CREATE VIEW matchs_ids AS
-Distinct(SELECT m.teamID1,m.matchID
-FROM match m
-JOIN 
-SELECT m.teamID2, m.matchID
-FROM match m )
-\end{lstlisting}
-
-\section{Pseudo code for Extract and Transform Task}
-The pseudo code for extracting can be thoroughly extended.
-The basic process is to grab the html of a website, parse it, and then execute a regex on its contents to capture data. The following is a code snippet:
-\lstinputlisting[language=Python]{extractphase2.py}
-
-\newpage
-\section{Pseudo code For Load Task}
-The following is a code snippet:
-\lstinputlisting[language=Python]{loadphase2.py}
-
+\section{Queries}
+The code for the SQL queries will be attached separately.
 
 \end{document}  

@@ -65,7 +65,10 @@ def safe_execute(db, sql):
 		except pymysql.InterfaceError as e:
 			write_log("Interface Error" + str(e))
 			db.rollback()
-		except:
+		except pymysql.err.OperationalError as e:
+			write_log("Operational Error" + str(e))
+			db.rollback()
+		except Exception as e:
 			# Rollback in case there is any error	
 			write_log("A mysterious error occurred")
 			db.rollback()
