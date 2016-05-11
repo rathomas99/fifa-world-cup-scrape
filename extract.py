@@ -258,7 +258,9 @@ def load_cups(cups):
 		#load.retrieve_cups(db)
 	
 def load_teams(team_dictionary):
+	"Load teams"
 	global db
+	inserted_teams = []
 	for team in team_dictionary:
 		if 'team_id' in team_dictionary[team]:
 			team_id = team_dictionary[team]["team_id"]
@@ -270,9 +272,11 @@ def load_teams(team_dictionary):
 			debug_print(flag)
 			if team_id != None and name != None and flag != None:
 				load.insert_team(db,team_id,name,flag)
+				inserted_teams.append(team_id)
 			else:
 				log("WARNING: Failed to load team because one of its fields was empty")
 				log(str(name) + str(team_id) + str(flag))
+	return inserted_teams
 				
 			
 def load_team_cup_memberships(team_dictionary):
@@ -334,7 +338,8 @@ def load_match(match_data):
 			log("ERROR: A match_data dictionary did not have the necessary field "+ str(e) + " to load into the database.")
 			#log(pretty_print_dict(match_data))
 	
-def load_goals(match):
+def load_goals(base,match, inserted_teams,inserted_players):
+	"Load goals"
 	global db
 	if "match_id" in match:
 		match_id = match["match_id"]
@@ -346,11 +351,88 @@ def load_goals(match):
 					type = goal["type"]
 					player_id = goal["player_id"]
 					team_id = goal["team_id"]
-					load.insert_goal(db,str(time),str(player_id),str(match_id),str(type),str(team_id))
+					if team_id in inserted_teams and player_id in inserted_teams:
+						load.insert_goal(db,time,player_id,match_id,type,team_id)
+					elif team_id in inserted_teams:
+						#only need to load player then goal
+						load_uninserted_player(base, goal["player_link"])
+						load.insert_goal(db,time,player_id,match_id,type,team_id)
+					elif player_id in inserted_players:
+						#only need to load team then goal
+						load_uninserted_team(base, goal["team_abbr"])
+						load.insert_goal(db,time,player_id,match_id,type,team_id)
+					else:
+						#both!
+						load_uninserted_player(base, goal["player_link"])
+						load_uninserted_team(goal["team_abbr"])
+						load.insert_goal(db,time,player_id,match_id,type,team_id)
 				except KeyError as e:
 					log("ERROR: A goal did not have a necessary field to load into the database.")
 					log(pretty_print_dict(goal))
+
+def load_uninserted_player(base, player_link):
+	#Example link http://www.fifa.com/fifa-tournaments/players-coaches/people=207528/index.html
 	
+	debug_print("Loading uninserted player")
+	#Request page
+	page = requests.get(base + player_link)
+	#Parse html
+	soup = BeautifulSoup(page.content, 'html.parser')
+	player_name = ""
+	try:
+		player_name = soup.find("div",class_="fdh-wrap contentheader").find("h1").get_text()
+	except AttributeError as e:
+		player_name = soup.find("div",class_="container").find("h1").get_text()
+		log("WARNING: Using alternate definition of player name")
+	
+	debug_print("UNEXPECTED PLAYER WITH NAME? " + player_name)
+	
+	#Use simpler link ex. http://www.fifa.com/fifa-tournaments/players-coaches/people=207528/library/_people_detail.htmx
+	player_link = player_link.replace("index.html","library/_people_detail.htmx")
+	#Request page
+	page = requests.get(base + player_link)
+	#Parse html
+	soup = BeautifulSoup(page.content, 'html.parser')
+	debug_print(soup.prettify())
+	screaming = False
+	try:
+		guesses = soup.find_all("div")
+		player_id = -1
+		for guess in guesses:
+			try:
+				player_id = guess["data-player-id"]
+				debug_print("found it")
+			except KeyError as e:
+				if screaming:
+					print("sigh")
+		
+		birthday = soup.find("div", class_="people-dob")
+		if birthday != None:
+			birthday = birthday.find(class_ = "data").get_text()
+		else:
+			log("WARNING: FUCK YOUR LACK OF BIRTHDAY PLAYER")
+			log(player_link)
+		
+		load.insert_player(db,player_id,player_name,birthday)
+	except AttributeError as e:
+		log("ERROR: Load uninserted player - id and birthday damn it " + str(e))
+
+def load_uninserted_team(team_abbreviation):
+	link = "http://www.fifa.com/fifa-tournaments/teams/association=" + team_abbreviation + "/index.html"
+	#Request page 
+	page = requests.get(link)
+	#Parse html
+	soup = BeautifulSoup(page.content, 'html.parser')
+	name = soup.find("span", class_="fdh-text").get_text()
+	flag = soup.find("img", class_="flag")["src"]
+	team_id = get_team_id_for_country(name)
+	if team_id != None and name != None and flag != None:
+		load.insert_team(db,team_id,name,flag)
+		inserted_teams.append(team_id)
+	else:
+		log("WARNING: Failed to load previously uninserted team because one of its fields was empty")
+		log(str(name) + str(team_id) + str(flag))
+					
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"
 	#Request page 
@@ -433,8 +515,6 @@ def get_match_data(base,extension):
 		goals = get_scorers(result,home_team_id,away_team_id)
 		
 		match = {"match_id":match_id, "home_team_id": home_team_id, "away_team_id": away_team_id}
-		match["FIFA_home_team_id"] = FIFA_home_team_id
-		match["FIFA_away_team_id"] = FIFA_away_team_id
 		match["home_score"] = home_score
 		match["away_score"] = away_score
 		match["stadium"] = stadium
@@ -468,27 +548,28 @@ def get_match_data(base,extension):
 	
 def get_scorers(result,home_team_id,away_team_id):
 	"For a match, find players who scored goals"
-	#TODO Find type of goal
-	#TODO Find time of goal
 	#TODO Find number of goals
 	goals = {}
 	if result != None:
 		#Find player ids of the players that scored for the home team
 		home_scorers_html = result.find("div",class_="t-scorer home")
 		home_scorers = home_scorers_html.find_all("li",class_="mh-scorer")
-		goals = for_loop_scorers(goals,home_team_id,home_scorers)
+		team_abbr = result.find("div",class_="t home").find("span").getText()
+		goals = for_loop_scorers(goals,home_team_id,home_scorers,team_abbr)
 			
 		#Find player ids of the players that scored for the away team
 		away_scorers_html = result.find("div",class_="t-scorer away")
 		away_scorers = away_scorers_html.find_all("li",class_="mh-scorer")
-		goals = for_loop_scorers(goals,away_team_id,away_scorers)
+		team_abbr = result.find("div",class_="t away").find("span").getText()
+		goals = for_loop_scorers(goals,away_team_id,away_scorers,team_abbr)
 		
 		return goals
 	
-def for_loop_scorers(goals, specified_team_id,specified_scorers):
+def for_loop_scorers(goals, specified_team_id,specified_scorers,team_abbr):
 	"For a player, find goals and their type"
 	for scorer in specified_scorers:
 			player_id = scorer.find("span").find("div")["data-player-id"]
+			player_link = scorer.find("span").find("div").find("a")["href"]
 			goals_html = scorer.find_all("span", class_="ml-scorer-evmin")
 			for goal_html in goals_html:
 				goal_text = goal_html.find("span").get_text()
@@ -497,7 +578,9 @@ def for_loop_scorers(goals, specified_team_id,specified_scorers):
 				minutes_since_start = goal_text.split("'")[0]
 				goals[minutes_since_start] = {}
 				goals[minutes_since_start]["player_id"] = player_id
+				goals[minutes_since_start]["player_link"] = player_link
 				goals[minutes_since_start]["team_id"] = specified_team_id
+				goals[minutes_since_start]["team_abbr"] = team_abbr
 				if "PEN" in goal_text:
 					#debug_print("penalty goal")
 					goals[minutes_since_start]["type"] = "Penalty"
@@ -567,7 +650,7 @@ def main():
 	team_dictionary = get_teams(base + '/fifa-tournaments/teams/search.html')
 	
 	debug_print("Load teams----------------------------------------")
-	load_teams(team_dictionary)
+	inserted_teams = load_teams(team_dictionary)
 	
 	#Test crap
 	country_names = {'Brazil'}#,'Qatar','USA', 'Japan'}
@@ -595,13 +678,13 @@ def main():
 	debug_print("Load cup memberships----------------------------------------")
 	load_team_cup_memberships(test_dict)
 	debug_print("Load players and team memberships----------------------------------------")
-	load_team_membership(test_dict)
+	inserted_players = load_team_membership(test_dict)
 	
 	pretty_print_dict(test_dict['Brazil']['members'])
 	
 	debug_print("Load goals----------------------------------------")
 	for match_data in super_match_data:
-		load_goals(match_data)
+		load_goals(base,match_data,inserted_teams,inserted_players)
 
 	#get_cup_membership(base,cups["2014"],test_dict)
 	#pretty_print_dict(team_dictionary)
