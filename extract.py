@@ -86,7 +86,19 @@ def get_team_id_for_country(country_name):
 		#debug_print(country_name + " goes to " + team_id)
 		return team_id
 	except KeyError as e:
-		log("ERROR: The given country name doesn't correspond to an id in the default dictionary of countries: " + str(country_name))
+		log("WARNING: The given country name doesn't correspond to an id in the default dictionary of countries: " + str(country_name))
+		new_value = find_biggest(team_names.team_country) + 1
+		team_names.team_country_ids[country_name] = new_value
+		return new_value
+	
+def find_biggest(dictionary):
+	"For the team ids dictionary, find biggest value"
+	max = 0
+	for key in dictionary:
+		value = dictionary[key]
+		if value > max:
+			max = value
+	return max
 	
 def get_team_data(base, team):
 	"For the given team, acquire general world cup data"
@@ -294,13 +306,14 @@ def load_team_cup_memberships(team_dictionary):
 		if 'team_id' in team_dictionary[team]:
 			team_id = team_dictionary[team]["team_id"]
 			debug_print(team)
-			participations = team_dictionary[team]["participations"]
-			for cup_year in participations:
-				#rank = participations["cup_year"]["rank"]
-				rank = -1
-				#TODO GET RANK
-				debug_print(cup_year)
-				load.insert_team_cup_membership(db,str(team_id),str(cup_year),str(rank))
+			if "participations" in team_dictionary[team]:
+				participations = team_dictionary[team]["participations"]
+				for cup_year in participations:
+					#rank = participations["cup_year"]["rank"]
+					rank = -1
+					#TODO GET RANK
+					debug_print(cup_year)
+					load.insert_team_cup_membership(db,str(team_id),str(cup_year),str(rank))
 
 def load_team_membership(team_dictionary):
 	global db
