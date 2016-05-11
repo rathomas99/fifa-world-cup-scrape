@@ -358,7 +358,7 @@ def load_goals(base,match, inserted_teams,inserted_players):
 					player_id = goal["player_id"]
 					team_id = goal["team_id"]
 					if type and player_id and team_id:
-						if inserted_teams != [] and inserted_players != []:
+						if inserted_teams and inserted_players:
 							if team_id in inserted_teams and player_id in inserted_teams:
 								load.insert_goal(db,time,player_id,match_id,type,team_id)
 							elif team_id in inserted_teams:
@@ -415,7 +415,7 @@ def load_uninserted_player(base, player_link):
 			guesses = soup.find_all("div")
 			player_id = -1
 			for guess in guesses:
-				log(str(guess.prettify("latin-1")))
+				#log(str(guess.prettify("latin-1")))
 				try:
 					player_id = guess["data-player-id"]
 					debug_print("found it")
@@ -428,14 +428,14 @@ def load_uninserted_player(base, player_link):
 			if [] == guesses:
 				log("THERE ARE NO GUESSES FOR BIRTHDAY WHYYYYYY")
 			for guess in guesses:
-				log(str(guess.prettify("latin-1")))
+				#log(str(guess.prettify("latin-1")))
 				birthday = guess.get_text()
 			
 			load.insert_player(db,player_id,player_name,birthday)
 		except AttributeError as e:
 			log("ERROR: Load uninserted player - id and birthday damn it " + str(e))
 	except Exception as e:
-		log("ERROR: " + str(e))
+		log("ERROR: In uninserted player: " + str(e))
 
 def load_uninserted_team(team_abbreviation):
 	link = "http://www.fifa.com/fifa-tournaments/teams/association=" + team_abbreviation + "/index.html"
@@ -443,15 +443,18 @@ def load_uninserted_team(team_abbreviation):
 	page = requests.get(link)
 	#Parse html
 	soup = BeautifulSoup(page.content, 'html.parser')
-	name = soup.find("span", class_="fdh-text").get_text()
-	flag = soup.find("img", class_="flag")["src"]
-	team_id = get_team_id_for_country(name)
-	if team_id != None and name != None and flag != None:
-		load.insert_team(db,team_id,name,flag)
-		inserted_teams.append(team_id)
-	else:
-		log("WARNING: Failed to load previously uninserted team because one of its fields was empty")
-		log(str(name) + str(team_id) + str(flag))
+	try:
+		name = soup.find("span", class_="fdh-text").get_text()
+		flag = soup.find("img", class_="flag")["src"]
+		team_id = get_team_id_for_country(name)
+		if team_id != None and name != None and flag != None:
+			load.insert_team(db,team_id,name,flag)
+			inserted_teams.append(team_id)
+		else:
+			log("WARNING: Failed to load previously uninserted team because one of its fields was empty")
+			log(str(name) + str(team_id) + str(flag))
+	except Exception as e:
+		log("ERROR: In uninserted team" + str(e))
 					
 def get_cup_match_links(base, extension):
 	"For the given world cup, get link to match webpages"
