@@ -62,7 +62,7 @@ def get_teams(website):
 		if name != None:
 			country_name = name.get_text()
 			team_id = get_team_id_for_country(country_name)
-			debug_print(team_id)
+			#debug_print(team_id)
 		else:
 			#No names were found
 			country_name = "INVALIDCOUNTRY"
@@ -80,7 +80,7 @@ def get_teams(website):
 def get_team_id_for_country(country_name):
 	try:
 		team_id = team_names.team_country_ids[country_name] 
-		debug_print(country_name + " goes to " + team_id)
+		#debug_print(country_name + " goes to " + team_id)
 		return team_id
 	except KeyError as e:
 		log("ERROR: The given country name doesn't correspond to an id in the default dictionary of countries: " + str(country_name))
@@ -132,7 +132,10 @@ def get_all_match_data(base, list_of_link_to_cup_matches):
 			debug_print(match)
 			match_data = get_match_data(base, match)
 			super_match_data.append(match_data)
-			#debug_print("done getting match data")	
+			#debug_print("done getting match data")
+			debug_print("Loading 1 match")
+			load_match(match_data)
+			
 	return super_match_data
 			
 def get_cups(base,extension):
@@ -195,14 +198,15 @@ def get_cup_membership(base, cup, team_dictionary):
 			team_dictionary[name]["members"] = {}
 			get_team_membership(base, cup_year, team_id, link, team_dictionary[name]["members"])
 			
-def  get_team_membership(base, cup_year, team_id, link, members_dictionary):
+def get_team_membership(base, cup_year, team_id, link,members_dictionary):
 	"For the given cup and team webpage, find team members who participated"
 	#Example link: http://www.fifa.com/worldcup/archive/uruguay1930/teams/team=43924/players.html
 	#"http://www.fifa.com/worldcup/archive/edition=1930/library/teams/team=43924/_players/_players_list.html"
 	
 	#link.replace("index.html","players.html")
 	
-	link = "/worldcup/archive/edition=" + cup_year + "/library/teams/team=" + team_id + "/_players/_players_list.html"
+	FIFA_team_id = link.split("team=")[1].split("/")[0]
+	link = "/worldcup/archive/edition=" + cup_year + "/library/teams/team=" + FIFA_team_id + "/_players/_players_list.html"
 	
 	page = requests.get(base + link)
 	#Parse html
@@ -212,29 +216,32 @@ def  get_team_membership(base, cup_year, team_id, link, members_dictionary):
 	debug_print("Acquiring team members for cup " + cup_year + " and team " + team_id)
 	player_list_html = soup.find("div", class_="p-list clearfix")
 	#debug_print(player_list_html.prettify())
-	player_list = player_list_html.find_all("div",recursive=False)
-	for player in player_list:
-		debug_print("-=-=--=-=-=-=-=-=-=-=-=-=-=-")
-		try:
-			player_id = player["data-player-id"]
-			player_name = player["data-player-name"]
-			player_link = player.find("a")
-			if player_link:
-				player_link = player_link["href"]
+	if player_list_html != None:
+		player_list = player_list_html.find_all("div",recursive=False)
+		for player in player_list:
+			debug_print("-=-=--=-=-=-=-=-=-=-=-=-=-=-")
+			try:
+				player_id = player["data-player-id"]
+				player_name = player["data-player-name"]
+				player_link = player.find("a")
+				if player_link:
+					player_link = player_link["href"]
+				
+				player_position = player.find("span", class_="p-i-fieldpos").get_text()
+				player_birthdate = player.find("span", class_="data")
+				if player_birthdate:
+					player_birthdate_YYYY_MM_DD = player_birthdate["data-birthdate"]
+					player_birthdate_english = player_birthdate.get_text()
 			
-			player_position = player.find("span", class_="p-i-fieldpos").get_text()
-			player_birthdate = player.find("span", class_="data")
-			if player_birthdate:
-				player_birthdate_YYYY_MM_DD = player_birthdate["data-birthdate"]
-				player_birthdate_english = player_birthdate.get_text()
-		
-			player_dict = {"player_id" : player_id, "player_name" : player_name, "player_link" : player_link, "player_position" : player_position, "player_birthdate" : player_birthdate_YYYY_MM_DD}
-			members_dictionary[cup_year].append(player_dict)
-			debug_print(player_id)
-			if debug:
-				pretty_print_dict(player_dict)
-		except KeyError as e:
-			log("ERROR: A team member in html problem " + str(e))
+				player_dict = {"player_id" : player_id, "player_name" : player_name, "player_link" : player_link, "player_position" : player_position, "player_birthdate" : player_birthdate_YYYY_MM_DD}
+				members_dictionary[cup_year].append(player_dict)
+				debug_print(player_id)
+				if debug:
+					pretty_print_dict(player_dict)
+			except KeyError as e:
+				log("ERROR: A team member in html problem " + str(e))
+	else:
+		log("ERROR: Failed to find player list for team-cup combowombo: " + link)
 		
 def start_load():
 	global db
@@ -257,11 +264,16 @@ def load_teams(team_dictionary):
 			team_id = team_dictionary[team]["team_id"]
 			name = team
 			flag = team_dictionary[team]["flag"]
-			load.insert_team(db,team_id,name,flag)
 			debug_print("===============")
 			debug_print(name)
 			debug_print(team_id)
 			debug_print(flag)
+			if team_id != None and name != None and flag != None:
+				load.insert_team(db,team_id,name,flag)
+			else:
+				log("WARNING: Failed to load team because one of its fields was empty")
+				log(str(name) + str(team_id) + str(flag))
+				
 			
 def load_team_cup_memberships(team_dictionary):
 	global db
@@ -401,11 +413,15 @@ def get_match_data(base,extension):
 		#Status = Full-time
 		status = result.find("div",class_="s-status").get_text()
 		#Home and away team ids
+		home_team_id = -1
+		away_team_id = -1
 		try:
-			home_team_id = result.find("div",class_="t home")["data-team-id"]	
-			away_team_id = result.find("div",class_="t away")["data-team-id"]
-		except KeyError as e:
-			log("ERROR: Finding match data, but couldn't get the home or away team's id")
+			home_team_name = result.find("div",class_="t home").find("span",class_="t-nText").get_text()
+			away_team_name = result.find("div",class_="t away").find("span",class_="t-nText").get_text()
+			home_team_id = get_team_id_for_country(home_team_name)
+			away_team_id = get_team_id_for_country(away_team_name)
+		except AttributeError as e:
+			log("ERROR: Finding match data, but couldn't get the home or away team's names")
 			log(str(e))
 			
 		#Home and away scores
@@ -417,6 +433,8 @@ def get_match_data(base,extension):
 		goals = get_scorers(result,home_team_id,away_team_id)
 		
 		match = {"match_id":match_id, "home_team_id": home_team_id, "away_team_id": away_team_id}
+		match["FIFA_home_team_id"] = FIFA_home_team_id
+		match["FIFA_away_team_id"] = FIFA_away_team_id
 		match["home_score"] = home_score
 		match["away_score"] = away_score
 		match["stadium"] = stadium
@@ -548,12 +566,15 @@ def main():
 	debug_print("Get team links----------------------------------------")
 	team_dictionary = get_teams(base + '/fifa-tournaments/teams/search.html')
 	
+	debug_print("Load teams----------------------------------------")
+	load_teams(team_dictionary)
+	
 	#Test crap
 	country_names = {'Brazil'}#,'Qatar','USA', 'Japan'}
 	test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
 	
-	debug_print("Get data for each team----------------------------------------")
-	get_all_teams_data(base, team_dictionary)
+	#debug_print("Get data for each team----------------------------------------")
+	#get_all_teams_data(base, team_dictionary)
 	
 	#More test crap
 	pretty_print_dict(test_dict)
@@ -561,24 +582,22 @@ def main():
 	test_links = ["/worldcup/archive/brazil2014/matches/index.html"]
 	
 	debug_print("Get match data----------------------------------------")
-	super_match_data = get_all_match_data(base, list_of_link_to_cup_matches)
-	#super_match_data = get_all_match_data(base, test_links)
+	#super_match_data = get_all_match_data(base, list_of_link_to_cup_matches)
+	super_match_data = get_all_match_data(base, test_links)
 	debug_print("Load match data----------------------------------------")
-	for match_data in super_match_data:
-		load_match(match_data)
+	#for match_data in super_match_data:
+	#	load_match(match_data)
 	
 	debug_print("Get cup membership----------------------------------------")
-	for cup in cups:
-		get_cup_membership(base, cups[cup], team_dictionary)
+	for cup in test_cup_years:
+		get_cup_membership(base, cups[cup], test_dict)
 		
-	debug_print("Load teams----------------------------------------")
-	load_teams(team_dictionary)
 	debug_print("Load cup memberships----------------------------------------")
-	load_team_cup_memberships(team_dictionary)
+	load_team_cup_memberships(test_dict)
 	debug_print("Load players and team memberships----------------------------------------")
-	load_team_membership(team_dictionary)
+	load_team_membership(test_dict)
 	
-	pretty_print_dict(team_dictionary['Brazil']['members'])
+	pretty_print_dict(test_dict['Brazil']['members'])
 	
 	debug_print("Load goals----------------------------------------")
 	for match_data in super_match_data:
