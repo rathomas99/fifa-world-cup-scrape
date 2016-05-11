@@ -212,5 +212,10 @@ team_country_ids = {
 "Yugoslavia":"210",
 "Germany FR" : "211",
 "Soviet Union" : "212",
-"Czechoslovakia" : "213"
+"Czechoslovakia" : "213",
+"German DR" : "214",
+"Zaire" : "215",
+"Dutch East Indies" : "216",
+"Ivory Coast" : "217",
+"Serbia and Montenegro" : "218"
 }
