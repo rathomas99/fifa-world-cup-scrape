@@ -497,6 +497,26 @@ def get_cup_match_links(base, extension):
 	debug_print(links)
 	return links
 
+def convert_month_name(month_abbr):
+	dict = {
+	"Jan" : "01",
+	"Feb" : "02",
+	"Mar" : "03",
+	"Apr" : "04",
+	"May" : "05",
+	"Jun" : "06",
+	"Jul" : "07",
+	"Aug" : "08",
+	"Sep" : "09",
+	"Oct" : "10",
+	"Nov" : "11",
+	"Dec" : "12"}
+	try:
+		value = dict[month_abbr]
+		return value
+	except Exception as e:
+		log("ERROR: Couldn't parse month abbreviation " + month_abbr)
+	
 def get_match_data(base,extension):
 	"For the given match, get data"
 	#Request page 
@@ -535,6 +555,13 @@ def get_match_data(base,extension):
 			day = str(day_month_numbers[0:2])
 		except KeyError as e:
 			log("ERROR: There is no time(" + str(e) + ") listed in the match website.")
+			try:
+				#12 Jun 2014 - 17:00 Local Time
+				month = given_datetime[3:6]
+				month = convert_month_name(month)
+				day = given_datetime[0:2]				
+			except Exception as e:
+				log("ERROR: Try 2 at time for match failed " + str(e))
 			
 		#Round = Groups/Semifinals/Finals
 		round = result.find("div",class_="mh-i-round").get_text()
