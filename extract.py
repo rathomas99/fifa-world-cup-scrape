@@ -392,7 +392,7 @@ def load_uninserted_player(base, player_link):
 		page = requests.get(base + player_link)
 		#Parse html
 		soup = BeautifulSoup(page.content, 'html.parser')
-		player_name = ""
+		player_name = "shibbolethOfDooom"
 		try:
 			player_name = soup.find("div",class_="fdh-wrap contentheader").find("h1").get_text()
 		except AttributeError as e:
@@ -411,29 +411,39 @@ def load_uninserted_player(base, player_link):
 		#log(str(soup.prettify("latin-1")))
 		
 		screaming = False
-		try:
-			guesses = soup.find_all("div")
-			player_id = -1
-			for guess in guesses:
-				#log(str(guess.prettify("latin-1")))
-				try:
-					player_id = guess["data-player-id"]
-					debug_print("found it")
-				except KeyError as e:
-					if screaming:
-						print("sigh")
-			
-			guesses = soup.find_all(class_="data")
-			birthday = ""
-			if [] == guesses:
-				log("THERE ARE NO GUESSES FOR BIRTHDAY WHYYYYYY")
-			for guess in guesses:
-				#log(str(guess.prettify("latin-1")))
-				birthday = guess.get_text()
-			
-			load.insert_player(db,player_id,player_name,birthday)
-		except AttributeError as e:
-			log("ERROR: Load uninserted player - id and birthday damn it " + str(e))
+		title = soup.find("title")
+		if "Fifa.com" == title:
+			log("WARNING: You hit the unfound page page")
+		else:
+			debug_print(title)
+			try:
+				guesses = soup.find_all("div")
+				player_id = "-1"
+				for guess in guesses:
+					#log(str(guess.prettify("latin-1")))
+					try:
+						player_id = guess["data-player-id"]
+						debug_print("found it")
+					except KeyError as e:
+						if screaming:
+							print("sigh")
+				
+				debug_print("player id " + player_id)
+				
+				root_birth = soup.find("div",class_="people-dob")
+				if not (root_birth):
+					log("WARNING: There isn't a birthday listed for this player")
+				guesses = soup.find_all("span",class_="data")
+				birthday = "0000-00-00"
+				if [] == guesses:
+					log("WARNING: THERE ARE NO GUESSES FOR BIRTHDAY WHYYYYYY")
+				for guess in guesses:
+					#log(str(guess.prettify("latin-1")))
+					birthday = guess.get_text()
+				
+				load.insert_player(db,player_id,player_name,birthday)
+			except AttributeError as e:
+				log("ERROR: Load uninserted player - id and birthday damn it " + str(e))
 	except Exception as e:
 		log("ERROR: In uninserted player: " + str(e))
 
