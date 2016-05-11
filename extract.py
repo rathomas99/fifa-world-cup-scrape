@@ -524,7 +524,7 @@ def main():
 	test_dict = { key:value for key,value in team_dictionary.items() if key in country_names }
 	
 	debug_print("Get data for each team----------------------------------------")
-	get_all_teams_data(base, test_dict)
+	get_all_teams_data(base, team_dictionary)
 	
 	#More test crap
 	pretty_print_dict(test_dict)
@@ -532,24 +532,24 @@ def main():
 	test_links = ["/worldcup/archive/brazil2014/matches/index.html"]
 	
 	debug_print("Get match data----------------------------------------")
-	#super_match_data = get_all_match_data(base, list_of_link_to_cup_matches)
-	super_match_data = get_all_match_data(base, test_links)
+	super_match_data = get_all_match_data(base, list_of_link_to_cup_matches)
+	#super_match_data = get_all_match_data(base, test_links)
 	debug_print("Load match data----------------------------------------")
 	for match_data in super_match_data:
 		load_match(match_data)
 	
 	debug_print("Get cup membership----------------------------------------")
-	for cup in test_cup_years:
+	for cup in cups:
 		get_cup_membership(base, cups[cup], team_dictionary)
 		
 	debug_print("Load teams----------------------------------------")
-	load_teams(test_dict)
+	load_teams(team_dictionary)
 	debug_print("Load cup memberships----------------------------------------")
-	load_team_cup_memberships(test_dict)
+	load_team_cup_memberships(team_dictionary)
 	debug_print("Load players and team memberships----------------------------------------")
-	load_team_membership(test_dict)
+	load_team_membership(team_dictionary)
 	
-	pretty_print_dict(test_dict['Brazil']['members'])
+	pretty_print_dict(team_dictionary['Brazil']['members'])
 	
 	debug_print("Load goals----------------------------------------")
 	for match_data in super_match_data:

@@ -11,10 +11,13 @@ log = None
 
 def write_log(statement):
 	global log
-	statement = str(statement)
-	#print(statement)
-	log.write(statement)
-	log.write('\n')
+	try:
+		statement = str(statement)
+		#print(statement)
+		log.write(statement)
+		log.write('\n')
+	except UnicodeEncodeError as e:
+		log.write("ERROR: In writing a statement, UNICODE happened. " + str(e))
 
 def openDB():
 	"Open a database connection and log file"
