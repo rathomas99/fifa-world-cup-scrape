@@ -1,6 +1,9 @@
 from bs4 import BeautifulSoup
 import requests
 import load
+from fake_useragent import UserAgent
+
+ua = UserAgent()
 
 db = load.openDB()
 base = "http://www.fifa.com/fifa-tournaments/players-coaches/people"
@@ -22,7 +25,7 @@ for number in numbers:
 	try:
 		player_link= base + str(number) + rest
 		#Request page
-		headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+		headers = {'User-Agent': ua.random}
 		page = requests.get(base + player_link, headers=headers)
 		#Parse html
 		soup = BeautifulSoup(page.content, 'html.parser')
