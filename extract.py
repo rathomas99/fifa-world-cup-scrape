@@ -15,13 +15,16 @@ def log(my_string):
 	"Ensure that errors are propagated to the user"
 	global loglog
 	try:
-		print(my_string)
 		statement = str(my_string)
-		#print(statement)
+		print(my_string)
+	except UnicodeEncodeError as e:
+		loglog.write("ERROR: In writing a statement, UNICODE happened. " + str(e))
+		
+	try:
 		loglog.write(my_string)
 		loglog.write('\n')
 	except UnicodeEncodeError as e:
-		log.write("ERROR: In writing a statement, UNICODE happened. " + str(e))
+		loglog.write("ERROR: In writing a statement, UNICODE happened. " + str(e))
 
 def debug_print(my_string):
 	"When debugging, print this out"
@@ -121,21 +124,24 @@ def get_all_teams_data(base, teams_dict):
 	for team in teams_dict:
 		get_team_data(base,teams_dict[team])
 
-def get_all_match_data(base, list_of_link_to_cup_matches):
+def get_all_match_data(base, list_of_link_to_cup_matches, limit):
 	debug_print("Go through cups")
 	super_match_data = []
+	counter = 0
+	
 	for link in list_of_link_to_cup_matches:
 		debug_print(link)
 		matches = get_cup_match_links(base,link)
 		debug_print("For a cup, acquired links for matches")
 		for match in matches:
-			debug_print(match)
-			match_data = get_match_data(base, match)
-			super_match_data.append(match_data)
-			#debug_print("done getting match data")
-			debug_print("Loading 1 match")
-			load_match(match_data)
-			
+			while counter < limit:
+				debug_print(match)
+				match_data = get_match_data(base, match)
+				super_match_data.append(match_data)
+				#debug_print("done getting match data")
+				debug_print("Loading 1 match")
+				load_match(match_data)
+			counter = counter + 1
 	return super_match_data
 			
 def get_cups(base,extension):
@@ -351,18 +357,24 @@ def load_goals(base,match, inserted_teams,inserted_players):
 					type = goal["type"]
 					player_id = goal["player_id"]
 					team_id = goal["team_id"]
-					if team_id in inserted_teams and player_id in inserted_teams:
-						load.insert_goal(db,time,player_id,match_id,type,team_id)
-					elif team_id in inserted_teams:
-						#only need to load player then goal
-						load_uninserted_player(base, goal["player_link"])
-						load.insert_goal(db,time,player_id,match_id,type,team_id)
-					elif player_id in inserted_players:
-						#only need to load team then goal
-						load_uninserted_team(base, goal["team_abbr"])
-						load.insert_goal(db,time,player_id,match_id,type,team_id)
+					if inserted_teams != [] and inserted_players != []:
+						if team_id in inserted_teams and player_id in inserted_teams:
+							load.insert_goal(db,time,player_id,match_id,type,team_id)
+						elif team_id in inserted_teams:
+							#only need to load player then goal
+							load_uninserted_player(base, goal["player_link"])
+							load.insert_goal(db,time,player_id,match_id,type,team_id)
+						elif player_id in inserted_players:
+							#only need to load team then goal
+							load_uninserted_team(base, goal["team_abbr"])
+							load.insert_goal(db,time,player_id,match_id,type,team_id)
+						else:
+							#both!
+							load_uninserted_player(base, goal["player_link"])
+							load_uninserted_team(goal["team_abbr"])
+							load.insert_goal(db,time,player_id,match_id,type,team_id)
 					else:
-						#both!
+						#assume both!
 						load_uninserted_player(base, goal["player_link"])
 						load_uninserted_team(goal["team_abbr"])
 						load.insert_goal(db,time,player_id,match_id,type,team_id)
@@ -371,51 +383,58 @@ def load_goals(base,match, inserted_teams,inserted_players):
 					log(pretty_print_dict(goal))
 
 def load_uninserted_player(base, player_link):
-	#Example link http://www.fifa.com/fifa-tournaments/players-coaches/people=207528/index.html
-	
-	debug_print("Loading uninserted player")
-	#Request page
-	page = requests.get(base + player_link)
-	#Parse html
-	soup = BeautifulSoup(page.content, 'html.parser')
-	player_name = ""
 	try:
-		player_name = soup.find("div",class_="fdh-wrap contentheader").find("h1").get_text()
-	except AttributeError as e:
-		player_name = soup.find("div",class_="container").find("h1").get_text()
-		log("WARNING: Using alternate definition of player name")
-	
-	debug_print("UNEXPECTED PLAYER WITH NAME? " + player_name)
-	
-	#Use simpler link ex. http://www.fifa.com/fifa-tournaments/players-coaches/people=207528/library/_people_detail.htmx
-	player_link = player_link.replace("index.html","library/_people_detail.htmx")
-	#Request page
-	page = requests.get(base + player_link)
-	#Parse html
-	soup = BeautifulSoup(page.content, 'html.parser')
-	debug_print(soup.prettify())
-	screaming = False
-	try:
-		guesses = soup.find_all("div")
-		player_id = -1
-		for guess in guesses:
-			try:
-				player_id = guess["data-player-id"]
-				debug_print("found it")
-			except KeyError as e:
-				if screaming:
-					print("sigh")
+		#Example link http://www.fifa.com/fifa-tournaments/players-coaches/people=207528/index.html
 		
-		birthday = soup.find("div", class_="people-dob")
-		if birthday != None:
-			birthday = birthday.find(class_ = "data").get_text()
-		else:
-			log("WARNING: FUCK YOUR LACK OF BIRTHDAY PLAYER")
-			log(player_link)
+		debug_print("Loading uninserted player")
+		#Request page
+		page = requests.get(base + player_link)
+		#Parse html
+		soup = BeautifulSoup(page.content, 'html.parser')
+		player_name = ""
+		try:
+			player_name = soup.find("div",class_="fdh-wrap contentheader").find("h1").get_text()
+		except AttributeError as e:
+			player_name = soup.find("div",class_="container").find("h1").get_text()
+			log("WARNING: Using alternate definition of player name")
 		
-		load.insert_player(db,player_id,player_name,birthday)
-	except AttributeError as e:
-		log("ERROR: Load uninserted player - id and birthday damn it " + str(e))
+		debug_print("UNEXPECTED PLAYER WITH NAME? " + player_name)
+		
+		#Use simpler link ex. http://www.fifa.com/fifa-tournaments/players-coaches/people=207528/library/_people_detail.htmx
+		player_link = player_link.replace("index.html","library/_people_detail.htmx")
+		#Request page
+		page = requests.get(base + player_link)
+		#Parse html
+		soup = BeautifulSoup(page.content, 'html.parser')
+		debug_print(player_link)
+		#log(str(soup.prettify("latin-1")))
+		
+		screaming = False
+		try:
+			guesses = soup.find_all("div")
+			player_id = -1
+			for guess in guesses:
+				log(str(guess.prettify("latin-1")))
+				try:
+					player_id = guess["data-player-id"]
+					debug_print("found it")
+				except KeyError as e:
+					if screaming:
+						print("sigh")
+			
+			guesses = soup.find_all(class_="data")
+			birthday = ""
+			if [] == guesses:
+				log("THERE ARE NO GUESSES FOR BIRTHDAY WHYYYYYY")
+			for guess in guesses:
+				log(str(guess.prettify("latin-1")))
+				birthday = guess.get_text()
+			
+			load.insert_player(db,player_id,player_name,birthday)
+		except AttributeError as e:
+			log("ERROR: Load uninserted player - id and birthday damn it " + str(e))
+	except Exception as e:
+		log("ERROR: " + str(e))
 
 def load_uninserted_team(team_abbreviation):
 	link = "http://www.fifa.com/fifa-tournaments/teams/association=" + team_abbreviation + "/index.html"
@@ -643,8 +662,8 @@ def main():
 	debug_print("Get cups----------------------------------------")
 	list_of_link_to_cup_matches,cups = get_cups(base, "/fifa-tournaments/archive/worldcup/index.html")
 	
-	debug_print("Load cups----------------------------------------")
-	load_cups(cups)
+	#debug_print("Load cups----------------------------------------")
+	#load_cups(cups)
 	
 	debug_print("Get team links----------------------------------------")
 	team_dictionary = get_teams(base + '/fifa-tournaments/teams/search.html')
@@ -666,7 +685,9 @@ def main():
 	
 	debug_print("Get match data----------------------------------------")
 	#super_match_data = get_all_match_data(base, list_of_link_to_cup_matches)
-	super_match_data = get_all_match_data(base, test_links)
+	#super_match_data = get_all_match_data(base, test_links,2)
+	match_data = get_match_data(base, "/worldcup/matches/round=201/match=1093/report.html")
+	super_match_data = [match_data]
 	debug_print("Load match data----------------------------------------")
 	#for match_data in super_match_data:
 	#	load_match(match_data)
