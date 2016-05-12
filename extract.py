@@ -686,7 +686,8 @@ def get_report_innards(report):
 		lineup = report.find("div",class_="lineup").find("table",class_="table fielded")
 		#debug_print(lineup.prettify())
 		subs = report.find("div",class_="lineup").find("table",class_="table substitutes")
-		
+		file = open("OFFICIALS", "w")
+		"""
 		home_rows = lineup.find_all("td",class_="home")
 		for row in home_rows:
 			home_id = row.find("div")["data-player-id"]
@@ -700,6 +701,7 @@ def get_report_innards(report):
 		debug_print("MATCH REPORT")
 		debug_print(home_lineup)
 		debug_print(away_lineup)
+		"""
 		if debug:
 			pretty_print_dict(officials)		
 	return officials

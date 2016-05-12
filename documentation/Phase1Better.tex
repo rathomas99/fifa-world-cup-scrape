@@ -457,7 +457,17 @@ information to files extracting\_logYmd-HMS and loading\_logYmd-HMS.
 All of the ETL code can be found online at \url{https://github.com/rathomas99/fifa-world-cup-scrape}.
 
 \section{Queries}
-The code for the SQL queries will be attached separately.
+The SQL code for the queries follow. Note that the query for a country's flag is very easy, so it is replaced by a query to look up the top 10 venues for matches. The query for a country's flag still exists, but is not shown in the website. 
+
+\begin{lstlisting}[language=SQL]
+	#Flag query for a team with name team_name_value
+	SELECT Team.Flag From Team 
+	WHERE Team.Name = "'" + team_name_value + "'";
+\end{lstlisting}
+
+\paragraph{Query for Top 10 Venues.}
+This query looks up the venues that had the most soccer games played in them, the venues that had the most audience totals, and the venues that had the highest audience in a single game. This would help spot popular soccer spots across the world and show a world wide picture of the popularity of soccer.
+\lstinputlisting[language=SQL]{queries.sql}
 
 \part{Phase 3 Documentation}
 \section{User Manual}
